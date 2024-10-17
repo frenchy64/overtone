@@ -9,7 +9,7 @@
         [overtone.libs.deps]
         [overtone.sc.server]
         [overtone.sc.synth]
-        [overtone.sc.ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.sc.buffer]
         [overtone.sc.foundation-groups]
         [overtone.sc.node]

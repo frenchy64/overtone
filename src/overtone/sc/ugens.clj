@@ -5,6 +5,8 @@
   about each ugen (ugen directory). (Eventually we hope to get this information
   dynamically from the server.)"
   {:author "Jeff Rose & Christophe McKeon"}
+  (:refer-clojure :exclude [= < <= * min not= > mod - or / >= + abs max and])
+  ;; fn-gen will intern colliding ugens in this namespace as a side effect
   (:use [overtone.sc.machinery.ugen fn-gen]))
 
 ;; Done actions are typically executed when an envelope ends, or a sample ends

@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.env
-  (:use [overtone.sc defcgen ugens]))
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]))
 
 (defcgen hold
   "Hold an input source for a set period of time and then stop."

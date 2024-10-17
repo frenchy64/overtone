@@ -5,7 +5,7 @@
   (:use [overtone.libs.event]
         [overtone.libs.counters]
         [overtone.sc.synth]
-        [overtone.sc.ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.sc.node]
         [overtone.sc.server]
         [overtone.sc.machinery.allocator]

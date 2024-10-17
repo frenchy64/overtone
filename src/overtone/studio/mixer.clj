@@ -12,7 +12,7 @@
         [overtone.sc.synth]
         [overtone.sc.server]
         [overtone.sc.info]
-        [overtone.sc.ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.sc.envelope]
         [overtone.sc.node]
         [overtone.sc.bus]

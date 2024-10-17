@@ -11,7 +11,7 @@
   {:author "Jeff Rose, Sam Aaron"}
   (:use
    [overtone.helpers lib]
-   [overtone.sc ugens]))
+   [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]))
 
 (def ENV-SHAPES
   {:step        0

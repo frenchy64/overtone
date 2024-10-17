@@ -1,6 +1,6 @@
 (ns overtone.sc.examples.trig
   (:use [overtone.sc.machinery defexample]
-        [overtone.sc ugens]))
+        [overtone.sc [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]))
 
 (defexamples send-reply
   (:count

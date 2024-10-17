@@ -2,7 +2,7 @@
   (:use [overtone.sc.machinery.allocator]
         [overtone.sc.machinery.server.comms]
         [overtone.sc.synth]
-        [overtone.sc.ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.sc.defaults]
         [overtone.sc.server]
         [overtone.sc.node]

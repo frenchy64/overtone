@@ -1,7 +1,7 @@
 (ns overtone.sc.cgens.freq
   (:use
    overtone.sc.defcgen
-   overtone.sc.ugens
+   [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
    overtone.algo.chance))
 
 (defcgen add-cents

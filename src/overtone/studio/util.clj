@@ -3,7 +3,7 @@
   {:author "Sam Aaron & Jeff Rose"}
   (:use [overtone.libs.event]
         [overtone.sc.synth]
-        [overtone.sc.ugens]))
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]))
 
 ;; Some utility synths for signal routing and scoping
 (defonce __UTIL-SYNTHS__
