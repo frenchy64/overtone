@@ -114,7 +114,7 @@
     `(let [~@bindings]
        ~@body)))
 
-;; We refer all the ugen functions here so they can be access by other
+;; We refer all the non-clashing ugen functions here so they can be accessed by other
 ;; parts of the Overtone system using a fixed namespace.  For example,
 ;; to automatically stick an Out ugen on synths that don't explicitly
 ;; use one.
