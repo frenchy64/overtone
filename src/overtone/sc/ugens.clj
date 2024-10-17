@@ -105,7 +105,7 @@
   Float/POSITIVE_INFINITY)
 
 (defmacro with-overloaded-ugens
-  "Bind symbols for all colliding or overloaded ugens
+  "Bind symbols for all colliding and/or overloaded ugens
     * + - / < <= = > >= abs and max min mod not= or
   to the overloaded fn in the ns overtone.sc.ugen-collide. These fns will
   revert back to original (clojure.core) semantics in the following scenarios.
