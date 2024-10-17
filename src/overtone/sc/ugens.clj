@@ -5,7 +5,7 @@
   about each ugen (ugen directory). (Eventually we hope to get this information
   dynamically from the server.)
   
-  Use overtone.sc.ugen-collide for a public interface to ugens that collide with
+  Use overtone.sc.ugen-collide for a public namespace of ugens that collide with
   clojure.core vars."
   {:author "Jeff Rose & Christophe McKeon"}
   (:use [overtone.sc.machinery.ugen fn-gen]))
@@ -105,11 +105,22 @@
   Float/POSITIVE_INFINITY)
 
 
+    (sort '[* + - / < > <= >= min max mod abs])
 (defmacro with-overloaded-ugens
-  "Bind symbols for all overloaded ugens (i.e. + - / etc.) to the
-  overloaded fn in the ns overtone.sc.ugen-colliders. These fns will
-  revert back to original
-  (Clojure) semantics if not passed with ugen args. "
+  "Bind symbols for all colliding or overloaded ugens
+    * + - / < <= = > >= abs and max min mod not= or
+  to the overloaded fn in the ns overtone.sc.ugen-collide. These fns will
+  revert back to original (clojure.core) semantics in the following scenarios.
+
+  Numerical functions:  * + - / < <= > >= abs max min mod
+  - original semantics if every input is number, otherwise ugen
+
+  Macros:  and or
+  - always ugen semantics
+
+  Equality:  = not=
+  - ????
+  "
   [& body]
   (let [bindings (flatten (map (fn [[orig overload]]
                                  [orig (symbol ugen-collide-ns-str (str overload))])

@@ -14,7 +14,7 @@
 
 ;; a ns to store all ugens that collide with standard ugen fns, create via require above
 (def ugen-collide-ns-str "overtone.sc.ugen-collide")
-(defonce ugen-collide-ns (create-ns (symbol ugen-collide-ns-str)))
+(defonce ^:private __CREATE-COLLIDE-NS__ (create-ns (symbol ugen-collide-ns-str)))
 (defonce overloaded-ugens* (atom {}))
 (defonce special-op-specs* (atom {}))
 
@@ -300,7 +300,10 @@
                         :unary (mk-overloaded-ugen-fn ugen-name-str ugen-fn)
                         :binary (mk-overloaded-ugen-fn ugen-name-str ugen-fn))]
     (swap! overloaded-ugens* assoc ugen-name overload-name)
-    (intern-warn-on-clash target-ns overload-name (mk-multi-ugen-fn ugen-name-str overloaded-fn original-fn))))
+    (intern-warn-on-clash target-ns overload-name
+                          (if (-> original-fn meta :macro)
+                            overloaded-fn
+                            (mk-multi-ugen-fn ugen-name-str overloaded-fn original-fn)))))
 
 (defn- def-ugen
   "Create and intern a set of functions for a given ugen-spec.
@@ -330,8 +333,8 @@
           (when (NUMERICAL-CLOJURE-FNS (str op-name))
             "Also, as this fn has been labelled as numerical, it will also be treated as a ugen if any of the args are not numbers."))))
 
-(defn- collides-with-clojure? [ugen-name]
-  (boolean (ns-resolve 'clojure.core ugen-name)))
+(defn- collides-with-clojure [ugen-name]
+  (ns-resolve 'clojure.core ugen-name))
 
 (defn- def-unary-op
   "def a unary op ugen (this is handled separately due to the fact that the
@@ -339,7 +342,7 @@
   in overtone)."
   [to-ns op-name special]
   (let [ugen-name (symbol (overtone-ugen-name op-name))
-        collider?    (collides-with-clojure? ugen-name)
+        collider?    (collides-with-clojure ugen-name)
         normalized-n (normalize-ugen-name op-name)
         orig-spec (get UGEN-SPECS "unaryopugen")
         doc-spec  (get unaryopugen-docspecs normalized-n {})
@@ -368,7 +371,7 @@
   in overtone)."
   [to-ns op-name special]
   (let [ugen-name    (symbol (overtone-ugen-name op-name))
-        collider?    (collides-with-clojure? ugen-name)
+        collider?    (collides-with-clojure ugen-name)
         normalized-n (normalize-ugen-name op-name)
         orig-spec    (get UGEN-SPECS "binaryopugen")
         doc-spec     (get binaryopugen-docspecs normalized-n {})
@@ -409,7 +412,7 @@
        (def-ugen to-ns ugen 0)))
    (let [should-define? (fn [op-name]
                           (= colliders?
-                             (collides-with-clojure? (symbol (overtone-ugen-name op-name)))))]
+                             (boolean (collides-with-clojure (symbol (overtone-ugen-name op-name))))))]
      (doseq [[op-name special] UNARY-OPS
              :when (should-define? op-name)]
        (def-unary-op to-ns op-name special))
@@ -418,13 +421,21 @@
        (def-binary-op to-ns op-name special)))))
 
 (defn intern-ugens
-  "Iterate over all UGen meta-data, generate the corresponding functions and
-  intern them in the current or otherwise specified namespace."
+  "Iterate over all UGen meta-data, generate the corresponding functions
+  for non-colliding ugens and intern them in the current or otherwise
+  specified namespace."
   ([] (intern-ugens *ns*))
   ([to-ns] (intern-ugens* to-ns false)))
 
+(defn intern-colliding-ugens
+  "Iterate over all UGen meta-data, generate the corresponding functions
+  for colliding ugens and intern them in the current or otherwise
+  specified namespace."
+  ([] (intern-ugens *ns*))
+  ([to-ns] (intern-ugens* to-ns true)))
+
 ;;ensure overloaded-ugens* is populated
-(defonce ^:private __intern-colliders__ (intern-ugens* ugen-collide-ns true))
+(defonce ^:private __INTERN-COLLIDERS__ (intern-colliding-ugens (symbol ugen-collide-ns-str)))
 
 (defn combined-specs
   "Return a combination of ugen specs and the auto-generated special-op specs."
