@@ -104,8 +104,6 @@
   "Positive infinity - abbreviation for Float/POSITIVE_INFINITY"
   Float/POSITIVE_INFINITY)
 
-
-    (sort '[* + - / < > <= >= min max mod abs])
 (defmacro with-overloaded-ugens
   "Bind symbols for all colliding or overloaded ugens
     * + - / < <= = > >= abs and max min mod not= or
@@ -113,7 +111,8 @@
   revert back to original (clojure.core) semantics in the following scenarios.
 
   Numerical functions:  * + - / < <= > >= abs max min mod
-  - original semantics if every input is number, otherwise ugen
+  - original semantics if every input is number or final arg is :force-ugen
+    otherwise ugen semantics.
 
   Macros:  and or
   - always ugen semantics
