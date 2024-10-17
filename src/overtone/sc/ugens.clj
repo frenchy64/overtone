@@ -3,7 +3,10 @@
   functions that act as DSP nodes in the synthesizer definitions used by
   SuperCollider. We generate the UGen functions based on hand written metadata
   about each ugen (ugen directory). (Eventually we hope to get this information
-  dynamically from the server.)"
+  dynamically from the server.)
+  
+  Use overtone.sc.ugen-collide for a public interface to ugens that collide with
+  clojure.core vars."
   {:author "Jeff Rose & Christophe McKeon"}
   (:use [overtone.sc.machinery.ugen fn-gen]))
 

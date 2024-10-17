@@ -9,13 +9,12 @@
         [overtone.sc.node :only [idify]]
         [overtone.sc.machinery.ugen sc-ugen defaults specs special-ops]
         [overtone.sc.machinery.ugen.metadata unaryopugen binaryopugen])
-  (:require [overtone.sc.machinery.ugen.doc :as doc]
-            overtone.sc.ugen-collide))
+  (:require [overtone.sc.machinery.ugen.doc :as doc]))
 
 
 ;; a ns to store all ugens that collide with standard ugen fns, create via require above
 (def ugen-collide-ns-str "overtone.sc.ugen-collide")
-(defonce ugen-collide-ns (the-ns (symbol ugen-collide-ns-str)))
+(defonce ugen-collide-ns (create-ns (symbol ugen-collide-ns-str)))
 (defonce overloaded-ugens* (atom {}))
 (defonce special-op-specs* (atom {}))
 
