@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.oscillators
-  (:use [overtone.sc defcgen ugens]))
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]))
 
 (defcgen pm-osc
   "Phase modulation sine oscillator pair."

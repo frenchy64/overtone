@@ -2,7 +2,8 @@
     ^{:doc "A representation of time for the server"
       :author "Sam Aaron"}
     overtone.sc.clock
-    (:use [overtone.sc synth ugens node bus server info foundation-groups]
+    (:use [overtone.sc synth [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
+           node bus server info foundation-groups]
           [overtone.libs deps])
     (:require [overtone.sc.defaults :as defaults]))
 

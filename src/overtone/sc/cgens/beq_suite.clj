@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.beq-suite
-  (:use [overtone.sc defcgen ugens]))
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]))
 
 (defcgen b-low-pass4
   "24db/oct rolloff - 4th order resonant Low Pass Filter"

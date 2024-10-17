@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.demand
-  (:use [overtone.sc defcgen ugens]
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]
         [overtone.helpers lib]))
 
 (defcgen duty

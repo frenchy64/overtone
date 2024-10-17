@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.fx
-  (:use [overtone.sc defcgen ugens]))
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]))
 
 (defcgen distortion2
   "Basic distortion"

@@ -1,6 +1,6 @@
 (ns overtone.sc.cgens.buf-io
   (:use [overtone.sc.defcgen]
-        [overtone.sc.ugens]))
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]))
 
 (defcgen scaled-play-buf
   "Play back a sample resident in a buffer with a rate scaled depending

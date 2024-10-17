@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.dyn
-  (:use [overtone.sc defcgen ugens]
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]
         [overtone.sc.cgens.mix]))
 
 (defn- init-dyn-klang [specs]

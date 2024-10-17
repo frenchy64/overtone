@@ -5,7 +5,7 @@
 
   (:use [clojure.walk :as walk]
         [overtone.helpers lib]
-        [overtone.sc ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.sc.machinery.ugen defaults fn-gen doc]))
 
 ;; TODO: add ICgen interface

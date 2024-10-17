@@ -11,7 +11,8 @@
    [overtone.music time]
    [overtone.sc.machinery.ugen fn-gen defaults common specs sc-ugen]
    [overtone.sc.machinery synthdef]
-   [overtone.sc bindings ugens server node foundation-groups dyn-vars]
+   [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
+   [overtone.sc bindings server node foundation-groups dyn-vars]
    [overtone.helpers seq]
    [clojure.pprint]
    [overtone.helpers.string :only [hash-shorten]])

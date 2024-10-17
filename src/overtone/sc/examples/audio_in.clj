@@ -1,6 +1,6 @@
 (ns overtone.sc.examples.audio-in
   (:use [overtone.sc.machinery defexample]
-        [overtone.sc ugens]
+        [overtone.sc [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]
         [overtone.sc.cgens audio-in]))
 
 (defexamples sound-in

@@ -1,5 +1,5 @@
 (ns overtone.sc.cgens.tap
-  (:use [overtone.sc defcgen ugens]
+  (:use [overtone.sc defcgen [ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]]
         [overtone.sc.machinery.ugen.fn-gen :only [with-ugen-meta]]))
 
 (defn validate-tap!

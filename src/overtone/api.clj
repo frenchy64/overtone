@@ -103,7 +103,8 @@
    'overtone.sc.server
    'overtone.sc.synth
    'overtone.sc.trig
-   'overtone.sc.ugens
+   {:ns 'overtone.sc.ugens
+    :exclude (into #{} (keys (ns-publics 'clojure.core)))}
    'overtone.sc.vbap
    'overtone.speech
    'overtone.studio.core

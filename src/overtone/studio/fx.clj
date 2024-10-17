@@ -3,7 +3,7 @@
   {:author "Jeff Rose"}
   (:use [overtone.libs.event]
         [overtone.sc.synth]
-        [overtone.sc.ugens]))
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]))
 
 (def BITS 32)
 

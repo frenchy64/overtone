@@ -1,7 +1,7 @@
 (ns overtone.sc.cgens.io
   (:use [overtone.sc.defaults]
         [overtone.sc.defcgen]
-        [overtone.sc.ugens]
+        [overtone.sc.ugens :exclude [= < <= * min not= > mod - or / >= + abs max and]]
         [overtone.helpers.seq]))
 
 (defcgen sound-in
