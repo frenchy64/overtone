@@ -3,7 +3,10 @@
   functions that act as DSP nodes in the synthesizer definitions used by
   SuperCollider. We generate the UGen functions based on hand written metadata
   about each ugen (ugen directory). (Eventually we hope to get this information
-  dynamically from the server.)"
+  dynamically from the server.)
+  
+  Use overtone.sc.ugen-collide for a public namespace of ugens that collide with
+  clojure.core vars."
   {:author "Jeff Rose & Christophe McKeon"}
   (:use [overtone.sc.machinery.ugen fn-gen]))
 
@@ -101,12 +104,22 @@
   "Positive infinity - abbreviation for Float/POSITIVE_INFINITY"
   Float/POSITIVE_INFINITY)
 
-
 (defmacro with-overloaded-ugens
-  "Bind symbols for all overloaded ugens (i.e. + - / etc.) to the
-  overloaded fn in the ns overtone.sc.ugen-colliders. These fns will
-  revert back to original
-  (Clojure) semantics if not passed with ugen args. "
+  "Bind symbols for all colliding and/or overloaded ugens
+    * + - / < <= = > >= abs and max min mod not= or
+  to the overloaded fn in the ns overtone.sc.ugen-collide. These fns will
+  revert back to original (clojure.core) semantics in the following scenarios.
+
+  Numerical functions:  * + - / < <= > >= abs max min mod
+  - original semantics if every input is number or final arg is :force-ugen
+    otherwise ugen semantics.
+
+  Macros:  and or
+  - always ugen semantics
+
+  Equality:  = not=
+  - ????
+  "
   [& body]
   (let [bindings (flatten (map (fn [[orig overload]]
                                  [orig (symbol ugen-collide-ns-str (str overload))])
@@ -114,7 +127,7 @@
     `(let [~@bindings]
        ~@body)))
 
-;; We refer all the ugen functions here so they can be access by other
+;; We refer all the non-clashing ugen functions here so they can be accessed by other
 ;; parts of the Overtone system using a fixed namespace.  For example,
 ;; to automatically stick an Out ugen on synths that don't explicitly
 ;; use one.
