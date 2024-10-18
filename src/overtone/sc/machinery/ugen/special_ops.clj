@@ -5,14 +5,14 @@
   overtone.sc.machinery.ugen.special-ops)
 
 (def UNARY-OPS
-  {"neg" 0         ; inversion
-   "not-pos?" 1    ; 0 when a < 0, +1 when a > 0, 1 when a is 0
-   ;;"is-nil" 2    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"not-nil" 3   ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"bitNot" 4    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+  {"neg" 0         ; neg (inversion)
+   "not-pos?" 1    ; not (0 when a < 0, +1 when a > 0, 1 when a is 0)
+   ;;"nil?" 2      ; isNil
+   ;;"some?" 3     ; notNil
+   "bit-not" 4     ; bitNot (ones complement)
    "abs" 5         ; absolute value
-   ;;"asFloat" 6   ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"asInt"   7   ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   ;"float" 6       ; asFloat (convert to float)
+   ;"int"   7       ; asInteger (convert to integer)
    "ceil" 8        ; next higher integer
    "floor" 9       ; next lower integer
    "frac" 10       ; fractional part
@@ -42,11 +42,11 @@
    "sinh" 34       ; hyperbolic sine
    "cosh" 35       ; hyperbolic cosine
    "tanh" 36       ; hyperbolic tangent
-   ;;"rand" 37     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"rand2" 38    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"linrand" 39  ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"bilinrand" 40; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"sum3rand" 41 ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   ;;"rand" 37     ; 
+   ;;"rand2" 38    ; 
+   ;;"linrand" 39  ;
+   ;;"bilinrand" 40;
+   ;;"sum3rand" 41 ;
    "distort" 42    ; distortion
    "softclip" 43   ; distortion
    ;;"coin" 44     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
@@ -68,25 +68,25 @@
    "+" 0             ; Addition
    "-" 1             ; Subtraction
    "*" 2             ; Multiplication
-   ;;"div" 3         ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   "/" 4             ; Division
+   ;;"div" 3         ; div, IDiv (not equivalent to clojure.core/quot, different rounding)
+   "/" 4             ; /, FDiv (Division)
    "mod" 5           ; Modulus
-   "=" 6             ; Equality
-   "not=" 7          ; Inequality
+   "=" 6             ; == (Equality)
+   "not=" 7          ; != (Inequality)
    "<" 8             ; Less than
    ">" 9             ; Greater than
    "<=" 10           ; Less than or equal to
    ">=" 11           ; Greater than or equal to
    "min" 12          ; minimum
    "max" 13          ; maximum
-   "and" 14          ; and (where pos sig is true)
-   "or" 15           ; or (where pos sig is true
-   "xor" 16          ; xor (where pos sig is true)
+   "bit-and" 14      ; bitAnd, & (bitwise and)
+   "bit-or" 15       ; bitOr, | (bitwise or)
+   "bit-xor" 16      ; bitXor (bitwise exclusive or)
    ;;"lcm" 17        ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
    ;;"gcd" 18        ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   "round" 19        ; Round to nearest multiple
-   "round-up" 20     ; Round up to next multiple
-   "round-down" 21   ; Round down to previous multiple
+   "round" 19        ; round (Round to nearest multiple)
+   "round-up" 20     ; roundUp (Round up to next multiple)
+   "round-down" 21   ; trunc (Round down to previous multiple)
    "atan2" 22        ; arctangent of a/b
    "hypot" 23        ; length of hypotenuse via Pythag
    "hypot-aprox" 24  ; approximation of length of hypotenuse
@@ -117,11 +117,11 @@
    })
 
 (def FOLDABLE-BINARY-OPS
-  #{"+" "-" "*" "/" "<" ">" "<=" ">=" "min" "max" "and" "or"})
+  #{"+" "-" "*" "/" "<" ">" "<=" ">=" "min" "max" "bit-and" "bit-or" "bit-xor"})
 
 ;;the following are Clojure fns that can only take numerical args
 (def NUMERICAL-CLOJURE-FNS
-  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "mod" "abs"})
+  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "bit-and" "bit-or" "bit-xor" "mod" "abs"})
 
 (def REVERSE-BINARY-OPS (zipmap (vals BINARY-OPS) (keys BINARY-OPS)))
 
@@ -133,7 +133,7 @@
 
 (def binary-op-unary-modes
   {"+"    (fn [ugen-fn arg] (ugen-fn 0 arg))
-   "-"    (fn [ugen-fn arg] (ugen-fn 0 arg))
+   "-"    (fn [ugen-fn arg] (ugen-fn 0 arg)) ;; could also compile to neg
    "*"    (fn [ugen-fn arg] (ugen-fn 1 arg))
    "/"    (fn [ugen-fn arg] (ugen-fn 1 arg))
    "="    (fn [ugen-fn arg] (ugen-fn arg arg))
