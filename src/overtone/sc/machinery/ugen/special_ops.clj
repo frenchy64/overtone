@@ -68,11 +68,11 @@
    "+" 0             ; Addition
    "-" 1             ; Subtraction
    "*" 2             ; Multiplication
-   ;;"div" 3         ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   "/" 4             ; Division
+   ;;"div" 3         ; div, IDiv (not equivalent to clojure.core/quot, different rounding)
+   "/" 4             ; /, FDiv (Division)
    "mod" 5           ; Modulus
-   "=" 6             ; Equality
-   "not=" 7          ; Inequality
+   "=" 6             ; == (Equality)
+   "not=" 7          ; != (Inequality)
    "<" 8             ; Less than
    ">" 9             ; Greater than
    "<=" 10           ; Less than or equal to
@@ -84,9 +84,9 @@
    "bit-xor" 16      ; bitXor (bitwise exclusive or)
    ;;"lcm" 17        ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
    ;;"gcd" 18        ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   "round" 19        ; Round to nearest multiple
-   "round-up" 20     ; Round up to next multiple
-   "round-down" 21   ; Round down to previous multiple
+   "round" 19        ; round (Round to nearest multiple)
+   "round-up" 20     ; roundUp (Round up to next multiple)
+   "round-down" 21   ; trunc (Round down to previous multiple)
    "atan2" 22        ; arctangent of a/b
    "hypot" 23        ; length of hypotenuse via Pythag
    "hypot-aprox" 24  ; approximation of length of hypotenuse
