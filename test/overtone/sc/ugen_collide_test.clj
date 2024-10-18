@@ -22,20 +22,16 @@
 ; (u/cosh 0.5) should call (Math/cosh 0.5)
 ; (u/tanh 0.5) should call (Math/tanh 0.5)
 
-;; the 2010 commit 7cf8fbcb40cb87419f82f64b0faf91857d0da1a1
-;; renamed sig-{and,or,xor} to {and,or,xor}. there's no
-;; good way to support overloading and/or since they're macros,
-;; so all 3 names were reverted in 2024.
-
-;; there used to be ugens called and/or. they were renamed
-;; to bit-{and,or} and now clojure.core/{and,or} are not shadowed
+;; there used to be ugens called and/or (originally sig-{and,or,xor}).
+;; they were renamed to bit-{and,or} and now clojure.core/{and,or} are not shadowed,
+;; which this test verifies.
 (deftest ugens-colliding-with-macros-test
-  (testing "and"
+  (testing "and is not shadowed"
     (is (true? (u/with-overloaded-ugens (and))))
     (is (= 1 (u/with-overloaded-ugens (and 1))))
     (is (= 1 (u/with-overloaded-ugens (and 1 1))))
     (is (= 5 (u/with-overloaded-ugens (and 1 2 3 4 5)))))
-  (testing "or"
+  (testing "or is not shadowed"
     (is (nil? (u/with-overloaded-ugens (or))))
     (is (= 1 (u/with-overloaded-ugens (or 1))))
     (is (= 1 (u/with-overloaded-ugens (or 1 1))))
