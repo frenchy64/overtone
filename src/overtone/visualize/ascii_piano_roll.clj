@@ -7,14 +7,19 @@
 (def ^:private piano-ascii-template
   #_
   (str/join "\n"
-            ["_HHH_________________________"
+            ["_HHH________________________"
              "│  █C█ █D█  │  █F█ █G█ █A█  │"
              "│_c_│_d_│_e_│_f_│_g_│_a_│_b_│"])
+  #_
   (str/join "\n"
-            ["_HHH___________"
-             "│ █ █ │ █ █ █ │"
-             "│ C D │ F G A │"
-             "│c│d│e│f│g│a│b│"]))
+            ["HH             "
+             "┃ █ █ ┃ █ █ █ ┃"
+             "┃ C D ┃ F G A ┃"
+             "┃c┃d┃e┃f┃g┃a┃b┃"])
+  (str/join "\n"
+            ["┃H█ █ ┃ █ █ █ ┃"
+             "┃ C D ┃ F G A ┃"
+             "┃c┃d┃e┃f┃g┃a┃b┃"]))
 
 (defn show [notes]
   (let [notes (into #{} (map p/note) notes)
@@ -46,9 +51,9 @@
                                          10 {\A v}
                                          11 {\b v}))))
                            (range 12)))
-                   (str/replace "HHH" (case octave
-                                        -1 "C-1"
-                                        (str "C" octave "_")))))
+                   (str/replace "H" (if (= -1 octave)
+                                      "-"
+                                      (str octave)))))
         start-octave (some-> octaves first key)
         end-octave (some-> octaves last key)
         has-middle-octaves? (< 2 (count octaves))]
@@ -86,7 +91,12 @@
   (println (show [:E4 :G4 :C5]))
   (println (show [:C4 :G4 :C5 :E5 :G5 :C6]))
   (println (show (p/rand-chord :c4 :diminished 3 12)))
-  (println (show (p/rand-chord :c-1 :9sus4 12 40)))
+(println (show (p/rand-chord :c-1 :9sus4 12 80)))
+;=┃-█ █ ┃ █ █ █ ┃0█ █ ┃ █ █ █ ┃1█ █ ┃ █ █ █ ┃2█ █ ┃ █ █ █ ┃3█ █ ┃ █ █ █ ┃4█ █ ┃ █ █ █ ┃5█ █ ┃ █ █ █ ┃
+;=┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ █ ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ █ ┃ █ █ ┃ █ █ █ ┃
+;=┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃●┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃●┃●┃_┃●┃●┃_┃_┃●┃_┃_┃_┃●┃_┃_┃_┃_┃_┃●┃_┃_┃_┃
+nil
+
   (println (show [:C4 :G4 :C5 :E5 :G5 :C6]))
   (println (show [:C4 :E4 :G4 :B4 :D5]))
   (println (show [60 64 70]))
