@@ -259,7 +259,7 @@
   (is (apply = (map #(sut/scale-field % :chromatic) (range 128))))
   (testing "fields contain valid MIDI notes"
     (doseq [note (range 128)
-            field (sut/scale-field 120)]
+            field (sut/scale-field note)]
       (testing (pr-str note)
         (is (<= 0 field 127))))))
 
