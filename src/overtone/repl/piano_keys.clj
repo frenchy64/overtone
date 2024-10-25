@@ -23,6 +23,7 @@
 
 ;; TODO override min/max octaves
 ;; TODO intermediate data representation
+;; TODO ascii fallback
 (defn print-piano-keys [notes]
   (let [notes (into #{} (map p/note) notes)
         octaves (into (sorted-map)
