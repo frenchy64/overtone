@@ -1,4 +1,4 @@
-(ns overtone.visualize.ascii-piano-roll
+(ns overtone.repl.piano-keys
   (:require [clojure.string :as str]
             [overtone.music.pitch :as p]))
 
@@ -21,7 +21,9 @@
              "┃ C D ┃ F G A ┃"
              "┃c┃d┃e┃f┃g┃a┃b┃"]))
 
-(defn show [notes]
+;; TODO override min/max octaves
+;; TODO intermediate data representation
+(defn print-piano-keys [notes]
   (let [notes (into #{} (map p/note) notes)
         octaves (into (sorted-map)
                       (group-by (comp :octave p/note-info p/find-note-name) notes))
@@ -57,48 +59,49 @@
         start-octave (some-> octaves first key)
         end-octave (some-> octaves last key)
         has-middle-octaves? (< 2 (count octaves))]
-    (if (= start-octave end-octave)
-      (inst (or start-octave 4) piano-ascii-template notes)
-      (let [roll-at (fn [octave]
-                      (let [pos (if (= start-octave octave)
-                                  :start
-                                  (if (= end-octave octave)
-                                    :end
-                                    :middle))]
-                        (->> piano-ascii-template
-                             str/split-lines
-                             ;; always trim the left side
-                             (mapv #(subs % 0
-                                          ((case pos
-                                             :start dec
-                                             :middle dec
-                                             :end identity)
-                                           (count %))))
-                             (str/join "\n"))))
-            join-rolls (fn [rolls]
-                         (str/join "\n"
-                                   (apply mapv (fn [& lines]
-                                                 (apply str lines))
-                                          (mapv str/split-lines rolls))))
-            rolls (into [] (map (fn [[octave notes]]
-                                  (inst octave (roll-at octave) notes)))
-                        octaves)]
-        (join-rolls rolls)))))
+    (println
+      (if (= start-octave end-octave)
+        (inst (or start-octave 4) piano-ascii-template notes)
+        (let [roll-at (fn [octave]
+                        (let [pos (if (= start-octave octave)
+                                    :start
+                                    (if (= end-octave octave)
+                                      :end
+                                      :middle))]
+                          (->> piano-ascii-template
+                               str/split-lines
+                               ;; always trim the left side
+                               (mapv #(subs % 0
+                                            ((case pos
+                                               :start dec
+                                               :middle dec
+                                               :end identity)
+                                             (count %))))
+                               (str/join "\n"))))
+              join-rolls (fn [rolls]
+                           (str/join "\n"
+                                     (apply mapv (fn [& lines]
+                                                   (apply str lines))
+                                            (mapv str/split-lines rolls))))
+              rolls (into [] (map (fn [[octave notes]]
+                                    (inst octave (roll-at octave) notes)))
+                          octaves)]
+          (join-rolls rolls))))))
 
 (comment
-  (println (show [60 64 67]))
-  (println (show [:C4 :E4 :G4 :C5]))
-  (println (show [:E4 :G4 :C5]))
-  (println (show [:C4 :G4 :C5 :E5 :G5 :C6]))
-  (println (show (p/rand-chord :c4 :diminished 3 12)))
-(println (show (p/rand-chord :c-1 :9sus4 12 80)))
+  (print-piano-keys [60 64 67])
+  (print-piano-keys [:C4 :E4 :G4 :C5])
+  (print-piano-keys [:E4 :G4 :C5])
+  (print-piano-keys [:C4 :G4 :C5 :E5 :G5 :C6])
+  (print-piano-keys (p/rand-chord :c4 :diminished 3 12))
+(print-piano-keys (p/rand-chord :c-1 :9sus4 12 80))
 ;=┃-█ █ ┃ █ █ █ ┃0█ █ ┃ █ █ █ ┃1█ █ ┃ █ █ █ ┃2█ █ ┃ █ █ █ ┃3█ █ ┃ █ █ █ ┃4█ █ ┃ █ █ █ ┃5█ █ ┃ █ █ █ ┃
 ;=┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ █ ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ ● ┃ █ █ ┃ █ █ █ ┃ █ █ ┃ █ █ █ ┃
 ;=┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃●┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃_┃●┃●┃_┃●┃●┃_┃_┃●┃_┃_┃_┃●┃_┃_┃_┃_┃_┃●┃_┃_┃_┃
 nil
 
-  (println (show [:C4 :G4 :C5 :E5 :G5 :C6]))
-  (println (show [:C4 :E4 :G4 :B4 :D5]))
-  (println (show [60 64 70]))
-  (println (show [61]))
+  (print-piano-keys [:C4 :G4 :C5 :E5 :G5 :C6])
+  (print-piano-keys [:C4 :E4 :G4 :B4 :D5])
+  (print-piano-keys [60 64 70])
+  (print-piano-keys [61])
   )
