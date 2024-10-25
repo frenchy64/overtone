@@ -21,7 +21,47 @@
              "┃ C D ┃ F G A ┃"
              "┃c┃d┃e┃f┃g┃a┃b┃"]))
 
-;; TODO override min/max octaves
+(defn piano-keys
+  ([notes] (piano-keys notes nil))
+  ([notes {:keys [min-octave max-octave]}]
+   (let [notes (into #{} (map p/note) notes)
+         octaves (into (sorted-map)
+                       (group-by (comp :octave p/note-info p/find-note-name) notes))
+         octaves (into (sorted-map) (map (fn [[octave notes]]
+                                           (let [notes (set notes)
+                                                 octave-start-note (p/octave-note octave 0)]
+                                             [octave (mapv (fn [n]
+                                                             (if (notes n) :on :off))
+                                                           (range octave-start-note (+ octave-start-note 12)))])))
+                       octaves)
+         start-octave (or (some-> octaves first key (cond-> min-octave (min min-octave)))
+                          min-octave)
+         end-octave (or (some-> octaves last key (cond-> max-octave (max max-octave)))
+                        max-octave)
+         [start-octave end-octave] (if start-octave
+                                     (if end-octave
+                                       [start-octave end-octave]
+                                       [start-octave start-octave])
+                                     (if end-octave
+                                       [end-octave end-octave]
+                                       [4 4]))]
+     (mapv (fn [i]
+             (let [key-states (or (octaves i)
+                                  (vec (repeat 12 :off)))]
+               {:octave i
+                :key-states key-states
+                :style (cond
+                         (= i start-octave end-octave) :start+end
+                         (= i start-octave) :start
+                         (= i end-octave) :end
+                         :else :middle)}))
+           (range start-octave (inc end-octave))))))
+
+(comment
+  (piano-keys [:C4 :G4 :C5 :E5 :G5 :C6])
+  (piano-keys [])
+  )
+
 ;; TODO intermediate data representation
 ;; TODO ascii fallback
 (defn print-piano-keys
