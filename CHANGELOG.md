@@ -6,6 +6,8 @@
 
 ## Changed
 
+- renamed `binary-div-op` ugen to `/`
+
 # 0.15.3295 (2024-10-24 / d354b4f)
 
 This release features a significant update of the Pattern Library introduced in
