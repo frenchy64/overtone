@@ -109,10 +109,6 @@
                 common-synth-params)))))
 ;;(macroexpand-1 '(gen-stringed-synth ektara 1 true))
 
-(comment
-  (defsynth foo "" [a {:default 10} a {:default 10}] (out a))
-  )
-
 ;; ======================================================================
 ;; common routines for stringed instruments
 
