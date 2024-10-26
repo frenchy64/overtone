@@ -20,22 +20,21 @@
 (defn -gen-stringed-synth
   [{:keys [dur decay coef noise-amp pre-amp amp distort rvb-mix rvb-room rvb-damp lp-freq lp-rq pan out-bus
            free-on-silence note-gate-pairs]}]
-  (let [strings (map #(let [frq  (midicps (first %))
-                            nze  (u/* noise-amp (pink-noise))
-                            plk  (pluck nze
-                                        (second %)
-                                        (u// 1.0 8.0)
-                                        (u// 1.0 frq)
-                                        decay
-                                        coef)
-                            env-gen-fn (fn [x]
-                                         (apply ug/env-gen
-                                                (env/asr 0.0001 1 0.1)
-                                                :gate (second x)
-                                                (when free-on-silence
-                                                  [:action ug/FREE])))]
-                        (leak-dc (u/* plk (env-gen-fn %))
-                                 0.995))
+  (let [strings (map (fn [[note gate]]
+                       (let [frq  (midicps note)
+                             nze  (u/* noise-amp (pink-noise))
+                             plk  (pluck nze
+                                         gate
+                                         (u// 1.0 8.0)
+                                         (u// 1.0 frq)
+                                         decay
+                                         coef)]
+                         (leak-dc (u/* plk (apply ug/env-gen
+                                                  (env/asr 0.0001 1 0.1)
+                                                  :gate gate
+                                                  (when free-on-silence
+                                                    [:action ug/FREE])))
+                                  0.995)))
                      note-gate-pairs)
         src (u/* pre-amp (mix strings))
         ;; distortion from fx-distortion2
@@ -45,6 +44,35 @@
         vrb (free-verb dis rvb-mix rvb-room rvb-damp)
         fil (rlpf vrb lp-freq lp-rq)]
     (out out-bus (pan2 (u/* amp fil) pan))))
+
+(def common-synth-params
+  '[dur       {:default 10.0  :min 1.0 :max 100.0}
+    decay     {:default 30    :min 1   :max 100} ;; pluck decay
+    coef      {:default 0.3   :min -1  :max 1}   ;; pluck coef
+    noise-amp {:default 0.8   :min 0.0 :max 1.0}
+    pre-amp   {:default 6.0   :min 0.0 :max 10.0}
+    amp       {:default 1.0   :min 0.0 :max 10.0}
+    ;; by default, no distortion, no reverb, no low-pass
+    distort   {:default 0.0   :min 0.0 :max 0.9999999999}
+    rvb-mix   {:default 0.0   :min 0.0 :max 1.0}
+    rvb-room  {:default 0.0   :min 0.0 :max 1.0}
+    rvb-damp  {:default 0.0   :min 0.0 :max 1.0}
+    lp-freq   {:default 20000 :min 100 :max 20000}
+    lp-rq     {:default 1.0   :min 0.1 :max 10.0}
+    pan       {:default 0.0   :min -1  :max 1}
+    out-bus   {:default 0     :min 0   :max 100}])
+
+(comment
+  (def example-map
+    (into {} (comp (partition-all 2)
+                   (map (fn [[k {:keys [default]}]] [(keyword k) default])))
+          common-synth-params))
+  ((requiring-resolve 'clojure.pprint/pprint)
+   (overtone.sc.machinery.ugen.sc-ugen/simplify-ugen
+     (-gen-stringed-synth
+       (assoc example-map
+              :note-gate-pairs [[3 1] [2 2]]))))
+  )
 
 (defmacro gen-stringed-synth
   "Macro to generate a stringed defsynth with distortion, reverb and
@@ -79,23 +107,7 @@
                  "  transition before a gate -> 1 transition activates it.\n"
                  (if free-on-silence
                    "\nThis instrument is transient.  When a string becomes silent, it will be freed."
-                   "\nThis instrument is persistent.  It will not be freed when the strings go silent."))
-        common-synth-params
-        '[dur       {:default 10.0  :min 1.0 :max 100.0}
-          decay     {:default 30    :min 1   :max 100} ;; pluck decay
-          coef      {:default 0.3   :min -1  :max 1}   ;; pluck coef
-          noise-amp {:default 0.8   :min 0.0 :max 1.0}
-          pre-amp   {:default 6.0   :min 0.0 :max 10.0}
-          amp       {:default 1.0   :min 0.0 :max 10.0}
-          ;; by default, no distortion, no reverb, no low-pass
-          distort   {:default 0.0   :min 0.0 :max 0.9999999999}
-          rvb-mix   {:default 0.0   :min 0.0 :max 1.0}
-          rvb-room  {:default 0.0   :min 0.0 :max 1.0}
-          rvb-damp  {:default 0.0   :min 0.0 :max 1.0}
-          lp-freq   {:default 20000 :min 100 :max 20000}
-          lp-rq     {:default 1.0   :min 0.1 :max 10.0}
-          pan       {:default 0.0   :min -1  :max 1}
-          out-bus   {:default 0     :min 0   :max 100}]]
+                   "\nThis instrument is persistent.  It will not be freed when the strings go silent."))]
     `(defsynth ~name
        ~doc
        [~@both-default-ins
