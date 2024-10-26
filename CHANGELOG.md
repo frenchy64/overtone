@@ -3,6 +3,9 @@
 ## Added
 
 ## Fixed
+- improved error checking for malformed synth params
+  - check for duplicate names
+  - assert simple symbols
 
 ## Changed
 
