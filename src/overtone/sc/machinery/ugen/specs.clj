@@ -233,11 +233,14 @@
 
 (defn add-default-args [spec ugen]
   (let [args        (:args ugen)
+        _ (when *debugging*
+            (println "args" (pr-str args)))
         arg-names   (spec-arg-names spec)
         default-map (zipmap arg-names
                             (map :default (:args spec)))
         arg-map     (arg-mapper args arg-names default-map)
         arg-list    (vec (map arg-map arg-names))]
+    (println "args" (pr-str arg-list))
     (assoc ugen :args arg-list :arg-map arg-map :orig-args args)))
 
 (defn ugen-sequence-mode?
@@ -389,8 +392,8 @@
 (defn- print-args-pre-processing [spec ugen]
   (let [ug-name (overtone-ugen-name (:name spec))]
     (println "==== Pre-Processing =====")
-    (println "Ugen " ug-name )
-    (println "Args: " (with-out-str (pr (:args ugen))))
+    (println "Ugen " ug-name)
+    (println "Args: " (pr-str (:args ugen)))
     (println "=========================\n")))
 
 (defn- print-args-post-processing [spec ugen]
@@ -409,24 +412,24 @@
   If an init function is already present it will get called after doing the
   mapping and mode transformations."
   [spec]
-  (let [defaulter        (partial add-default-args spec)
-        mapper           (partial map-ugen-args spec)
+  (let [defaulter        (partial #'add-default-args spec)
+        mapper           (partial #'map-ugen-args spec)
         init-fn          (if (contains? spec :init)
                            (:init spec)
-                           placebo-ugen-init-fn)
-        initer           (partial with-ugen-metadata-init spec init-fn)
-        n-outputer       (partial with-num-outs-mode spec)
-        floater          (partial with-floated-args spec)
-        appender         (partial append-seq-args spec)
-        auto-rater       (partial auto-rate-setter spec)
-        rate-checker     (partial check-arg-rates spec)
+                           #'placebo-ugen-init-fn)
+        initer           (partial #'with-ugen-metadata-init spec init-fn)
+        n-outputer       (partial #'with-num-outs-mode spec)
+        floater          (partial #'with-floated-args spec)
+        appender         (partial #'append-seq-args spec)
+        auto-rater       (partial #'auto-rate-setter spec)
+        rate-checker     (partial #'check-arg-rates spec)
         checker-fn       (if (contains? spec :check)
                            (:check spec)
-                           placebo-ugen-checker-fn)
-        nil-arg-checker  (partial with-ugen-checker-fn spec nil-arg-checker-fn)
-        bespoke-checker  (partial with-ugen-checker-fn spec checker-fn)
-        sanity-checker   (partial with-ugen-checker-fn spec sanity-checker-fn)
-        arg-name-checker (partial with-ugen-checker-fn spec arg-name-checker-fn)]
+                           #'placebo-ugen-checker-fn)
+        nil-arg-checker  (partial #'with-ugen-checker-fn spec #'nil-arg-checker-fn)
+        bespoke-checker  (partial #'with-ugen-checker-fn spec checker-fn)
+        sanity-checker   (partial #'with-ugen-checker-fn spec #'sanity-checker-fn)
+        arg-name-checker (partial #'with-ugen-checker-fn spec #'arg-name-checker-fn)]
 
     (assoc spec :init
 

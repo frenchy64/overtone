@@ -3,8 +3,13 @@
 ## Added
 
 ## Fixed
+- improved error checking for malformed synth params
+  - check for duplicate names
+  - assert simple symbols
 
 ## Changed
+
+- renamed `binary-div-op` ugen to `/`
 
 # 0.15.3295 (2024-10-24 / d354b4f)
 

@@ -10,9 +10,88 @@
   (:refer-clojure :exclude [abs])
   (:use [overtone.music pitch time]
         [overtone.sc envelope node server synth ugens]
-        [overtone.sc.cgens mix]))
+        [overtone.sc.cgens mix])
+  (:require [overtone.sc.ugen-collide :as u]
+            [overtone.sc.ugens :as ug]
+            [overtone.sc.envelope :as env]))
 
 ;; ======================================================================
+
+(defn -gen-stringed-synth
+  [{:keys [dur decay coef noise-amp pre-amp amp distort rvb-mix rvb-room rvb-damp lp-freq lp-rq pan out-bus
+           free-on-silence note-gate-pairs]}]
+  (let [strings (map (fn [[note gate]]
+                       (let [frq  (midicps note)
+                             nze  (u/* noise-amp (pink-noise))
+                             plk  (pluck nze
+                                         gate
+                                         (u// 1.0 8.0)
+                                         (u// 1.0 frq)
+                                         decay
+                                         coef)]
+                         (leak-dc (u/* plk (apply ug/env-gen
+                                                  (env/asr 0.0001 1 0.1)
+                                                  :gate gate
+                                                  (when free-on-silence
+                                                    [:action ug/FREE])))
+                                  0.995)))
+                     note-gate-pairs)
+        src (u/* pre-amp (mix strings))
+        ;; distortion from fx-distortion2
+        k   (u// (u/* 2 distort) (u/- 1 distort))
+        dis (u// (u/* src (u/+ 1 k))
+                 (u/+ 1 (u/* k (u/abs src))))
+        vrb (free-verb dis rvb-mix rvb-room rvb-damp)
+        fil (rlpf vrb lp-freq lp-rq)]
+    (out out-bus (pan2 (u/* amp fil) pan))))
+
+(def common-synth-params
+  '[dur       {:default 10.0  :min 1.0 :max 100.0}
+    decay     {:default 30    :min 1   :max 100} ;; pluck decay
+    coef      {:default 0.3   :min -1  :max 1}   ;; pluck coef
+    noise-amp {:default 0.8   :min 0.0 :max 1.0}
+    pre-amp   {:default 6.0   :min 0.0 :max 10.0}
+    amp       {:default 1.0   :min 0.0 :max 10.0}
+    ;; by default, no distortion, no reverb, no low-pass
+    distort   {:default 0.0   :min 0.0 :max 0.9999999999}
+    rvb-mix   {:default 0.0   :min 0.0 :max 1.0}
+    rvb-room  {:default 0.0   :min 0.0 :max 1.0}
+    rvb-damp  {:default 0.0   :min 0.0 :max 1.0}
+    lp-freq   {:default 20000 :min 100 :max 20000}
+    lp-rq     {:default 1.0   :min 0.1 :max 10.0}
+    pan       {:default 0.0   :min -1  :max 1}
+    out-bus   {:default 0     :min 0   :max 100}])
+
+(comment
+
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (= (:args (ug/env-gen (env/asr 0.0001 1 0.1)))
+       (map (ug/env-gen :envelope (env/asr 0.0001 1 0.1)))))
+  ;=Final arglist: (1.0 1.0 0.0 1.0 0.0 0 2 1 -99 1 1.0E-4 5 -4 0 0.1 5 -4)
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen (env/asr 0.0001 1 0.1)))
+  (env-gen {:envelope (asr 0.0001 1 0.1)})
+  (env-gen (asr 0.0001 1 0.1) nil)
+  (asr :a)
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen {:envelope (env/asr 0.0001 1 0.1)}))
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen :envelope (env/asr 0.0001 1 0.1)))
+  ;=> =Final arglist: (1.0 1.0 0.0 1.0 0.0 -4.0)
+  (ug/env-gen (env/asr 0.0001 1 0.1))
+  (ug/env-gen :envelope (env/asr 0.0001 1 0.1))
+  (ug/env-gen {:envelope (env/asr 0.0001 1 0.1)})
+  (def example-map
+    (into {} (comp (partition-all 2)
+                   (map (fn [[k {:keys [default]}]] [(keyword k) default])))
+          common-synth-params))
+  ((requiring-resolve 'clojure.pprint/pprint)
+   (overtone.sc.machinery.ugen.sc-ugen/simplify-ugen
+     (-gen-stringed-synth
+       (assoc example-map
+              :note-gate-pairs [[3 1] [2 2]]))))
+  )
+
 (defmacro gen-stringed-synth
   "Macro to generate a stringed defsynth with distortion, reverb and
    a low-pass filter.  Use the pick-string and strum-strings helper
@@ -39,62 +118,25 @@
                                                      (repeat num-strings {:default 0}))))
         both-default-ins (into note-default-ins gate-default-ins)
         note-gate-pairs (apply vector (map vector note-ins gate-ins))
-        env-gen-fn (if free-on-silence
-                     '(fn [x] (overtone.sc.ugens/env-gen
-                               (overtone.sc.envelope/asr 0.0001 1 0.1)
-                               :gate (second x)
-                               :action overtone.sc.ugens/FREE))
-                     '(fn [x] (overtone.sc.ugens/env-gen
-                               (overtone.sc.envelope/asr 0.0001 1 0.1)
-                               :gate (second x))))]
+        doc (str "a stringed instrument synth with " num-strings " strings mixed and sent thru\n"
+                 "  distortion and reverb effects followed by a low-pass filter.  Use\n"
+                 "  the pick-string and strum-strings helper functions to play the\n"
+                 "  instrument. Note: the strings need to be silenced with a gate -> 0\n"
+                 "  transition before a gate -> 1 transition activates it.\n"
+                 (if free-on-silence
+                   "\nThis instrument is transient.  When a string becomes silent, it will be freed."
+                   "\nThis instrument is persistent.  It will not be freed when the strings go silent."))]
     `(defsynth ~name
-       ~(str "a stringed instrument synth with " num-strings
-             " strings mixed and sent thru
-  distortion and reverb effects followed by a low-pass filter.  Use
-  the pick-string and strum-strings helper functions to play the
-  instrument. Note: the strings need to be silenced with a gate -> 0
-  transition before a gate -> 1 transition activates it."
-             (if free-on-silence
-               " This instrument
-  is transient.  When a string becomes silent, it will be freed."
-               " This instrument
-  is persistent.  It will not be freed when the strings go silent."))
-
+       ~doc
        [~@both-default-ins
-        ~'dur       {:default 10.0  :min 1.0 :max 100.0}
-        ~'decay     {:default 30    :min 1   :max 100} ;; pluck decay
-        ~'coef      {:default 0.3   :min -1  :max 1}   ;; pluck coef
-        ~'noise-amp {:default 0.8   :min 0.0 :max 1.0}
-        ~'pre-amp   {:default 6.0   :min 0.0 :max 10.0}
-        ~'amp       {:default 1.0   :min 0.0 :max 10.0}
-        ;; by default, no distortion, no reverb, no low-pass
-        ~'distort   {:default 0.0   :min 0.0 :max 0.9999999999}
-        ~'rvb-mix   {:default 0.0   :min 0.0 :max 1.0}
-        ~'rvb-room  {:default 0.0   :min 0.0 :max 1.0}
-        ~'rvb-damp  {:default 0.0   :min 0.0 :max 1.0}
-        ~'lp-freq   {:default 20000 :min 100 :max 20000}
-        ~'lp-rq     {:default 1.0   :min 0.1 :max 10.0}
-        ~'pan       {:default 0.0   :min -1  :max 1}
-        ~'out-bus   {:default 0     :min 0   :max 100}]
-       (let [strings# (map #(let [frq#  (midicps (first %))
-                                  nze#  (~'* ~'noise-amp (pink-noise))
-                                  plk#  (pluck nze#
-                                               (second %)
-                                               (/ 1.0 8.0)
-                                               (~'/ 1.0 frq#)
-                                               ~'decay
-                                               ~'coef)]
-                              (leak-dc (~'* plk# (~env-gen-fn %))
-                                       0.995))
-                           ~note-gate-pairs)
-             src# (~'* ~'pre-amp (mix strings#))
-             ;; distortion from fx-distortion2
-             k#   (~'/ (~'* 2 ~'distort) (~'- 1 ~'distort))
-             dis# (~'/ (~'* src# (~'+ 1 k#))
-                   (~'+ 1 (~'* k# (~'abs src#))))
-             vrb# (free-verb dis# ~'rvb-mix ~'rvb-room ~'rvb-damp)
-             fil# (rlpf vrb# ~'lp-freq ~'lp-rq)]
-         (out ~'out-bus (pan2 (~'* ~'amp fil#) ~'pan))))))
+        ~@common-synth-params]
+       (-gen-stringed-synth
+         ~(into {:free-on-silence (boolean free-on-silence)
+                 :note-gate-pairs note-gate-pairs}
+                (comp (partition-all 2)
+                      (map (fn [[n]]
+                             [(keyword n) n])))
+                common-synth-params)))))
 ;;(macroexpand-1 '(gen-stringed-synth ektara 1 true))
 
 ;; ======================================================================
