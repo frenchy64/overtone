@@ -63,6 +63,24 @@
     out-bus   {:default 0     :min 0   :max 100}])
 
 (comment
+
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (= (:args (ug/env-gen (env/asr 0.0001 1 0.1)))
+       (map (ug/env-gen :envelope (env/asr 0.0001 1 0.1)))))
+  ;=Final arglist: (1.0 1.0 0.0 1.0 0.0 0 2 1 -99 1 1.0E-4 5 -4 0 0.1 5 -4)
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen (env/asr 0.0001 1 0.1)))
+  (env-gen {:envelope (asr 0.0001 1 0.1)})
+  (env-gen (asr 0.0001 1 0.1) nil)
+  (asr :a)
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen {:envelope (env/asr 0.0001 1 0.1)}))
+  (binding [overtone.sc.machinery.ugen.specs/*debugging* true]
+    (ug/env-gen :envelope (env/asr 0.0001 1 0.1)))
+  ;=> =Final arglist: (1.0 1.0 0.0 1.0 0.0 -4.0)
+  (ug/env-gen (env/asr 0.0001 1 0.1))
+  (ug/env-gen :envelope (env/asr 0.0001 1 0.1))
+  (ug/env-gen {:envelope (env/asr 0.0001 1 0.1)})
   (def example-map
     (into {} (comp (partition-all 2)
                    (map (fn [[k {:keys [default]}]] [(keyword k) default])))
