@@ -339,7 +339,7 @@
   "Returns a list of param name symbols and control proxies"
   [params]
   (mapcat (fn [param] [(symbol (:name param))
-                      `(control-proxy ~(:name param) ~(:default param) ~(:rate param))])
+                       `(control-proxy ~(:name param) ~(:default param) ~(:rate param))])
           params))
 
 (defn- gen-synth-name
@@ -451,30 +451,35 @@
         ids        (set (map :id local-bufs))]
     (count ids)))
 
+(defn -pre-synth [->ugen sname params]
+  (binding [*ugens* []
+            *constants* #{}]
+    (let [[ugens consts]  (gather-ugens-and-constants (->ugen))
+          ugens           (topological-sort-ugens ugens)
+          main-tree       (set ugens)
+          side-tree       (remove main-tree *ugens*)
+          ugens           (concat ugens side-tree)
+          n-local-bufs    (count-ugens ugens "LocalBuf")
+          ugens           (if (> n-local-bufs 0)
+                            (cons (max-local-bufs n-local-bufs) ugens)
+                            ugens)
+          consts          (if (> n-local-bufs 0)
+                            (cons n-local-bufs consts)
+                            consts)
+          consts          (into [] (distinct) (concat consts *constants*))]
+      [sname params ugens consts])))
+
 (defmacro pre-synth
   "Resolve a synth def to a list of its name, params, ugens (nested if necessary)
   and constants. Sets the lexical bindings of the param names to control proxies
   within the synth definition"
   [& args]
   (let [[sname params param-proxies ugen-form] (normalize-synth-args args)]
-    `(let [~@param-proxies]
-          (binding [*ugens* []
-                    *constants* #{}]
-            (let [[ugens# consts#] (gather-ugens-and-constants
-                                    (with-overloaded-ugens ~@ugen-form))
-                  ugens#           (topological-sort-ugens ugens#)
-                  main-tree#       (set ugens#)
-                  side-tree#       (filter #(not (main-tree# %)) *ugens*)
-                  ugens#           (concat ugens# side-tree#)
-                  n-local-bufs#    (count-ugens ugens# "LocalBuf")
-                  ugens#           (if (> n-local-bufs# 0)
-                                     (cons (max-local-bufs n-local-bufs#) ugens#)
-                                     ugens#)
-                  consts#          (if (> n-local-bufs# 0)
-                                     (cons n-local-bufs# consts#)
-                                     consts#)
-                  consts#       (into [] (set (concat consts# *constants*)))]
-              [~sname ~params ugens# consts#])))))
+    `(-pre-synth
+       (let [~@param-proxies]
+         #(with-overloaded-ugens ~@ugen-form))
+       ~sname
+       ~params)))
 
 (defn synth-player
   "Returns a player function for a named synth.  Used by (synth ...)
