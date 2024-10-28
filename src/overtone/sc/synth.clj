@@ -425,6 +425,7 @@
    reuse of connection buffers, which means that a depth first
    topological sort of the graph is preferable to breadth first.'"
   [ugens]
+  (prn "ugens" ugens)
   (let [visit (fn visit [[ret visited path :as acc] ug]
                 (cond
                  (visited ug) acc
