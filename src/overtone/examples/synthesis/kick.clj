@@ -1,4 +1,4 @@
-(ns doc.kick
+(ns overtone.examples.synthesis.kick
   (:use [overtone.live])
   (:use [overtone.sc.machinery.synthdef])
   (:use [clojure.pprint]))

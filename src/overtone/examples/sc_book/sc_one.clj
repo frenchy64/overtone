@@ -1,16 +1,29 @@
-(ns sc-one
+(ns overtone.examples.sc-book.sc-one
   (:use [overtone.live]))
 
 ;;page 4
 ;;play({SinOsc.ar(LFNoise0.kr(12, mul: 600, add: 1000), 0.3)})
 
+;; just plays channel 0 (left speaker)
 (demo 10 (sin-osc (+ 1000 (* 600 (lf-noise0:kr 12))) 0.3))
+(stop)
+
+(demo 10 (* [0.8 0.8] ;; both speakers
+            (sin-osc (+ 1000 (* 600 (lf-noise0:kr 12))) 0.3)))
+(stop)
 
 ;;;;;;;;
 ;;page 5
 ;;play({RLPF.ar(Dust.ar([12, 15]), LFNoise1.ar(1/[3,4], 1500, 1600), 0.02)})
 
-(demo 10 (rlpf (dust [12 15]) (+ 1600 (* 1500 (lf-noise1 [1/3, 1/4]))) 0.02 ))
+(demo 10 (rlpf (dust [12 12])
+               (-> 1
+                   (/ [3 4])
+                   lf-noise1
+                   (* 1500)
+                   (+ 1600))
+               0.02))
+(stop)
 
 
 
@@ -32,15 +45,16 @@
 ;;/////////////
 
 
-
 (demo 2 (let [sines 5
               speed 6]
            (* (mix
                (map #(pan2 (* (sin-osc (* % 100))
                               (max 0 (+ (lf-noise1:kr speed) (line:kr 1 -1 30))))
-                           (- (clojure.core/rand 2) 1))
+                           (- (rand 2) 1))
                     (range sines)))
               (/ 1 sines))))
+
+(stop)
 
 
 
@@ -69,8 +83,8 @@
                saws  (mul-add (lf-saw [5 5.123]) 3 80)
                freq  (midicps (mul-add noise 24 saws))
                src   (* 0.4 (sin-osc freq))]
-
            (comb-n src 1 0.3 2)))
+(stop)
 
 
 
@@ -93,12 +107,16 @@
 ;;
 ;;}
 
-(demo (* 0.5 (sin-osc 100 (* 10 (sin-osc 500 0)))))
+(demo (* [0.4 0.4] (sin-osc 100 (* 10 (sin-osc 500 0)))))
+(stop)
 
 ;;we can use the pm-osc cgen provided by overtone:
 
-(demo (* 0.5 (pm-osc 100 500 10 0)))
-(demo 10 (pm-osc 440 (mouse-y:kr 1 550) (mouse-x:kr 1 15)))
+(demo (* [0.4 0.4] (pm-osc 100 500 10 0)))
+(stop)
+
+(demo 10 (* [0.4 0.4] (pm-osc 440 (mouse-y:kr 1 550) (mouse-x:kr 1 15))))
+(stop)
 
 
 ;;Page 17
@@ -128,8 +146,10 @@
       (let [trigger       (line:kr :start 1, :end 20, :dur 60)
             freq          (t-rand:kr :lo 100, :hi 1000, :trig (impulse:kr trigger))
             num-harmonics (t-rand:kr :lo 1,   :hi 10,   :trig (impulse:kr trigger))
-            amp           (linen:kr :gate (impulse:kr trigger) :attack-time 0, :sus-level 0.5, :release-time (/ 1 trigger))]
-        (* amp (blip freq num-harmonics))))
+            amp           (linen:kr :gate (impulse:kr trigger)
+                                    :attack-time 0, :sus-level 0.5, :release-time (/ 1 trigger))]
+        (* [amp amp] (blip freq num-harmonics))))
+(stop)
 
 
 
@@ -144,9 +164,11 @@
 ;;}.play
 ;;)
 
+;; move mouse around screen while playing
 (demo 10 (let [rate (mouse-x (/ 1 3) 10)
                amp  (linen:kr :gate (impulse:kr rate), :attack-time 0, :sus-level 1, :release-time (/ 1 rate))]
-           (* amp (sin-osc))))
+           (* [amp amp] (sin-osc))))
+(stop)
 
 
 
@@ -178,7 +200,8 @@
                f (t-rand:kr :lo 1, :hi 10, :trig t)
                ;;f (* 4 (+ 1 e))
                ]
-           (* e (blip :freq (* f 100), :numharm f))))
+           (* [e e] (blip :freq (* f 100), :numharm f))))
+(stop)
 
 
 ;;Page 21
@@ -211,11 +234,14 @@
                c (t-rand:kr :lo 100, :hi 5000, :trig r)
                m (t-rand:kr :lo 100, :hi 5000, :trig r)]
            (* [0.3 0.3] (pm-osc c m 12 0))))
+(stop)
 
+;; move mouse around while playing
 (demo 10 (let [rate 4
                carrier (+ 700 (* 500 (lf-noise0:kr rate)))
                mod-ratio (mouse-x :min 1, :max 2)]
-           (* 0.3 (pm-osc carrier (* carrier mod-ratio) 12 9))))
+           (* [0.3 0.3] (pm-osc carrier (* carrier mod-ratio) 12 9))))
+(stop)
 
 
 
@@ -267,7 +293,7 @@
 
 (defsynth different-tones [freq 440]
   (let [src (* 0.3 (sin-osc freq))]
-    (out 0 src)))
+    (out [0 1] src)))
 
 ;;run all four, then stop all
 (different-tones 550)
@@ -278,11 +304,15 @@
 
 
 ;;tracking and controlling synths independently
-(def a (different-tones :freq (midi->hz 64)))
-(def b (different-tones :freq (midi->hz 67)))
-(def c (different-tones :freq (midi->hz 72)))
-(ctl a :freq (midi->hz 65))
-(ctl c :freq (midi->hz 71))
+
+;; tension...
+(do
+  (def a (different-tones :freq (midi->hz 64)))
+  (def b (different-tones :freq (midi->hz 67)))
+  (def c (different-tones :freq (midi->hz 72)))
+  (ctl a :freq (midi->hz 65))
+  (ctl c :freq (midi->hz 71)))
+;; ...resolution
 (do
   (ctl a :freq (midi->hz 64))
   (ctl c :freq (midi->hz 72)))
@@ -290,6 +320,8 @@
   (kill a)
   (kill b)
   (kill c))
+
+(stop)
 
 
 
@@ -337,6 +369,8 @@
 
 (pmc-rotale :midi (ranged-rand 48 72) :tone (ranged-rand 1 6))
 
+(stop)
+
 ;;Page 25
 ;;
 ;;~houston = Buffer.read(s, "sounds/a11wlk01-44_1.aiff");
@@ -349,11 +383,15 @@
 ;;you're running OS X. Feel free to change the following audio paths
 ;;to any other audio file on your disk...
 
-(def houston (load-sample "/Applications/SuperCollider/sounds/a11wlk01-44_1.aiff"))
-(def chooston (load-sample "/Applications/SuperCollider/sounds/a11wlk01.wav"))
+(def houston (load-sample "/Applications/SuperCollider.app/Contents/Resources/sounds/a11wlk01-44_1.aiff"))
+(def chooston (load-sample "/Applications/SuperCollider.app/Contents/Resources/sounds/a11wlk01.wav"))
+
 
 (demo 4 (play-buf 1 houston))
+(stop)
+
 (demo 5 (play-buf 1 chooston))
+(stop)
 
 
 ;;Page 26
@@ -362,8 +400,8 @@
 ;;[~chooston.bufnum, ~chooston.numChannels, ~chooston.path, ~chooston.numFrames];
 
 ;;samples are represented as standard clojure maps
-houston
-chooston
+(into {} houston)
+(into {} chooston)
 
 
 
@@ -385,6 +423,7 @@ chooston
               src (play-buf 1 houston 1 trigger (* frames (line:kr 0 1 60)))
               env (env-gen:kr (lin 0.01 0.96 0.01) trigger)]
           (* src env rate)))
+(stop)
 
 ;; note how the envelope is used to stop clicking between segments. Contrast with the following
 
@@ -393,6 +432,7 @@ chooston
               trigger (impulse:kr rate)
               src (play-buf 1 houston 1 trigger (* frames (line:kr 0 1 60)))]
           (* src rate)))
+(stop)
 
 ;;( // speed and direction change
 ;;{
@@ -406,6 +446,7 @@ chooston
 (demo 5 (let [speed     (+ 1 (* 0.2 (lf-noise0:kr 12)))
               direction (lf-clip-noise:kr 1/3)]
           (play-buf 1 houston (* speed direction) :loop 1)))
+(stop)
 
 
 ;; Page 27
@@ -485,15 +526,16 @@ chooston
   (defsynth pulse-ctl [] (out:kr kbus4 (lin-lin (sin-osc:kr 1) -1 1 240 640)))
 
   (defsynth switch [freq 440]
-    (out 0 (sin-osc:ar freq 0 0.3)))
+    (out 0 (* (sin-osc:ar freq) 0.3)))
 
   (def s (switch))
   (def w (wave-ctl))
-  (def p (pulse-ctl)))
+  (def p (pulse-ctl))
+  )
 
 ;;try evaling these
-(map-ctl s :freq kbus3)
-(map-ctl s :freq kbus4)
+(node-map-controls s [:freq kbus3])
+(node-map-controls s [:freq kbus4])
 
 (stop)
 
@@ -513,6 +555,7 @@ chooston
 (demo 10 (pan2 (* (play-buf 1 houston :loop 1)
                   (sin-osc (+ 600 (* 500 (lf-noise0:kr 12)))))
                0.5))
+(stop)
 
 ;;
 ;;(
@@ -527,6 +570,7 @@ chooston
 (demo 10 (let [source (play-buf 1 chooston :loop 1)
                delay (allpass-c source 2 [0.65 1.15] 10)]
            (+ delay (pan2 source))))
+(stop)
 
 
 ;;//Create and name buses
@@ -615,7 +659,7 @@ chooston
 ;;}).start
 ;; )
 
-(def cont (atom true))
+(def cont (volatile! true))
 
 (do
   (def a [:C :C# :D :Eb :E :F :F# :G :Ab :A :Bb :B])
@@ -639,7 +683,9 @@ chooston
         (when @cont (recur))))))
 
 ;; to stop
-(reset! cont false)
+(vreset! cont false)
+
+(stop)
 
 ;; Page 36
 
@@ -662,22 +708,27 @@ chooston
 ;;)
 
 (demo 15
-      (* 0.3
-         (+ (* (sin-osc 220)  (max 0 (lf-noise1:kr 12)) 1)
-            (* (sin-osc 440)  (max 0 (lf-noise1:kr 12)) 1/2)
-            (* (sin-osc 660)  (max 0 (lf-noise1:kr 12)) 1/3)
-            (* (sin-osc 880)  (max 0 (lf-noise1:kr 12)) 1/4 )
-            (* (sin-osc 1110) (max 0 (lf-noise1:kr 12)) 1/5)
-            (* (sin-osc 1320) (max 0 (lf-noise1:kr 12)) 1/6))))
+      (out [0 1]
+           (-> (+ (* (sin-osc 220)  (max 0 (lf-noise1:kr 12)) 1)
+                  (* (sin-osc 440)  (max 0 (lf-noise1:kr 12)) 1/2)
+                  (* (sin-osc 660)  (max 0 (lf-noise1:kr 12)) 1/3)
+                  (* (sin-osc 880)  (max 0 (lf-noise1:kr 12)) 1/4)
+                  (* (sin-osc 1110) (max 0 (lf-noise1:kr 12)) 1/5)
+                  (* (sin-osc 1320) (max 0 (lf-noise1:kr 12)) 1/6))
+               ;; divide by number of input channels
+               (/ 6))))
+(stop)
 
-;; or the more compact but equivalent:
+;; or the more tunable but equivalent:
 
 (demo 15
-      (let [freqs [220 440 660 880 1110 1320]
-            muls  [1   1/2 1/3 1/4 1/5  1/6]
-            mk-sin #(* (sin-osc %1) (max 0 (lf-noise1 12)) %2)
-            sins  (map mk-sin freqs muls)]
-        (* (mix sins) 0.3)))
+      (let [nharmonics 6]
+        (out [0 1]
+             (mix (mapv #(* (sin-osc (* 220 %))
+                            (max 0 (lf-noise1:kr 12))
+                            (/ 1 %))
+                        (range 1 (inc nharmonics)))))))
+(stop)
 
 
 ;; Page 37
@@ -696,13 +747,13 @@ chooston
 ;;)
 
 (demo 15
-      (* 0.7
-         (mix
-          (for [count (range 12)]
-            (let [harm (* (inc count) 110)]
-              (* (sin-osc harm)
-                 (max [0 0] (sin-osc:kr (/ (inc count) 4)))
-                 (/ 1 (inc count))))))))
+      (mix
+        (mapv #(let [harm (-> % inc (* 110))]
+                 (* (sin-osc harm)
+                    (max [0 0] (sin-osc:kr (+ % 1/4)))
+                    (/ 1 (inc %))))
+              (range 12))))
+(stop)
 
 
 ;; Page 38
@@ -727,15 +778,18 @@ chooston
 ;;}.play;
 ;;)
 
+;;FIXME doesn't play
 (demo 10
       (let [num-res 5
             bells   20
-            scale   (map midi->hz [60 62 64 67 69])
-            mk-bell (fn [] (let [freqs (repeatedly num-res #(* (ranged-rand 1 5) (choose scale)))
-                                amps  (repeatedly num-res #(ranged-rand 0.3 0.9))
-                                rings (repeatedly num-res #(ranged-rand 1 4))
-                                specs [freqs amps rings]
-                                pan (softclip (* 2 (lf-noise1:kr (ranged-rand 3 6))))]
-                            (pan2 (klank specs (* 0.03 (dust (/ 1 6)) ))
-                                  pan)))]
+            scale   (mapv midi->hz [60 62 64 67 69])
+            mk-bell (fn []
+                      (let [freqs (repeatedly num-res #(* (ranged-rand 1 5) (choose scale)))
+                            amps  (repeatedly num-res #(ranged-rand 0.3 0.9))
+                            rings (repeatedly num-res #(ranged-rand 1 4))
+                            specs [freqs amps rings]
+                            pan (softclip (* 2 (lf-noise1:kr (ranged-rand 3 6))))]
+                        (-> (klank specs (* 0.03 (dust (/ 1 6))))
+                            (pan2 pan))))]
         (out 0 (mix (repeatedly bells mk-bell)))))
+(stop)
