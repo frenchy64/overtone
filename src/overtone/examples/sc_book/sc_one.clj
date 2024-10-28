@@ -1,3 +1,6 @@
+;; derived from
+;; https://github.com/supercollider/scbookcode/blob/3d70674fa4577bc37b717e2ec8b5ef859206dfb5/Ch%201%20Tutorial/Ch1code.scd
+;; GNU GPL 3
 (ns overtone.examples.sc-book.sc-one
   (:use [overtone.live]))
 

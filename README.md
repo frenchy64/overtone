@@ -235,6 +235,10 @@ See: https://github.com/overtone/overtone/graphs/contributors
 
 ## License
 
+```
+Examples derived from The Supercollider Book are under GNU GPL 3
+```
+
 The MIT License, see [[LICENSE]].
 
 Copyright &copy; 2009-2024 Jeff Ross, Sam Aaron, and contributors.
