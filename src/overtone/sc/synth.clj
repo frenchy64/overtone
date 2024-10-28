@@ -563,29 +563,32 @@
       (reset! ref (:default param)))
     ref))
 
+(defn -synth [full-name pre-synth-result]
+  (let [[sname params ugens constants] pre-synth-result
+        sdef             (synthdef sname params ugens constants)
+        arg-names        (map :name params)
+        params-with-vals (map (fn [param] (assoc param :value (control-proxy-value-atom full-name param))) params)
+        instance-fn      (apply comp (map :instance-fn (filter :instance-fn (map meta ugens))))
+        smap (with-meta
+               (map->Synth
+                 {:name sname
+                  :sdef sdef
+                  :args arg-names
+                  :params params-with-vals
+                  :instance-fn instance-fn})
+               {:overtone.helpers.lib/to-string (fn [this] (str (name (:type this)) ":" (:name this)))})]
+    (load-synthdef sdef)
+    (event :new-synth :synth smap)
+    smap))
+
 (defmacro synth
   "Define a SuperCollider synthesizer using the library of ugen
   functions provided by overtone.sc.ugen. This will return callable
   record which can be used to trigger the synthesizer.
   "
   [sname & args]
-  `(let [full-name# '~(symbol (str *ns*) (str sname))
-         [sname# params# ugens# constants#] (pre-synth ~sname ~@args)
-         sdef#             (synthdef sname# params# ugens# constants#)
-         arg-names#        (map :name params#)
-         params-with-vals# (map #(assoc % :value (control-proxy-value-atom full-name# %)) params#)
-         instance-fn#      (apply comp (map :instance-fn (filter :instance-fn (map meta ugens#))))
-         smap# (with-meta
-                 (map->Synth
-                  {:name sname#
-                   :sdef sdef#
-                   :args arg-names#
-                   :params params-with-vals#
-                   :instance-fn instance-fn#})
-                 {:overtone.helpers.lib/to-string #(str (name (:type %)) ":" (:name %))})]
-     (load-synthdef sdef#)
-     (event :new-synth :synth smap#)
-     smap#))
+  `(-synth '~(symbol (str *ns*) (str sname))
+           (pre-synth ~sname ~@args)))
 
 (defn synth-form
   "Internal function used to prepare synth meta-data."
