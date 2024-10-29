@@ -51,7 +51,17 @@
     (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-xor 1 1 :force-ugen))))
     (is (= 1 (u/with-overloaded-ugens (bit-xor 1 2 3 4 5))))
     (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-xor 1 2 (gate:kr) 4 5))))
-    (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-xor 1 2 (gate:kr) 4 5 :force-ugen))))))
+    (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-xor 1 2 (gate:kr) 4 5 :force-ugen)))))
+  (testing "bit-shift-left"
+    (is (= 4 (u/with-overloaded-ugens (bit-shift-left 1 2))))
+    (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-shift-left 1 2 :force-ugen)))))
+  (testing "bit-shift-right"
+    (is (= -1 (u/with-overloaded-ugens (bit-shift-right -1 10))))
+    (is (urep/sc-ugen? (u/with-overloaded-ugens (bit-shift-right -1 10 :force-ugen)))))
+  (testing "unsigned-bit-shift-right"
+    (is (= 18014398509481983 (u/with-overloaded-ugens (unsigned-bit-shift-right -1 10))))
+    (is (urep/sc-ugen? (u/with-overloaded-ugens (unsigned-bit-shift-right -1 10 :force-ugen)))))
+)
 
 (deftest divide-test
   (is (= 5/2 (u/with-overloaded-ugens (/ 5 2))))

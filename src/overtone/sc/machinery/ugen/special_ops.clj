@@ -90,10 +90,10 @@
    "atan2" 22        ; arctangent of a/b
    "hypot" 23        ; length of hypotenuse via Pythag
    "hypot-aprox" 24  ; approximation of length of hypotenuse
-   "pow" 25          ; exponentiation
-   ;;"leftShift" 26  ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   ;;"rightShift" 27 ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   ;;"un-r-shift" 28 ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
+   "pow" 25          ; ** exponentiation
+   "bit-shift-left" 26    ; <<, leftShift
+   "bit-shift-right" 27   ; >>, rightShift
+   "unsigned-bit-shift-right" 28 ; +>>, unsignedRightShift
    ;;"fill" 29       ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
    "ring1" 30        ; a * (b + 1) == a * b + a
    "ring2" 31        ; a * b + a + b
