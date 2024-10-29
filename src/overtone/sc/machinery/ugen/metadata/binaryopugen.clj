@@ -109,6 +109,17 @@
                         This should not be used for simulating a doppler
                         shift because it is discontinuous. Use hypot."}
 
+   "bit-shift-left"  {:summary "Bitwise shift left"
+                      :doc "Performs a bitwise left shift on the two input signals a and b.
+                           Corresponds to leftShift and the << operator in sclang."}
+
+   "bit-shift-right"  {:summary "Bitwise shift right"
+                       :doc "Performs a bitwise right shift on the two input signals a and b.
+                            Corresponds to rightShift and the >> operator in sclang."}
+   "unsigned-bit-shift-right"  {:summary "Bitwise shift right, without sign extension"
+                                :doc "Performs a bitwise right shift without sign extension on the two input signals a and b.
+                                     Corresponds to unsignedRightShift and the +>> operator in sclang."}
+
    "pow"         {:summary "exponentiation"
                   :doc "Returns a to the power of b
 
