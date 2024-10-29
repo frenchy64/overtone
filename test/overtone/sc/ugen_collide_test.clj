@@ -58,3 +58,8 @@
   (is (urep/sc-ugen? (u/with-overloaded-ugens (/ 5 2 :force-ugen))))
   (is (= 5/2 (sut// 5 2)))
   (is (urep/sc-ugen? (sut// 5 2 :force-ugen))))
+
+(deftest rand-test
+  (is (number? (u/with-overloaded-ugens (rand))))
+  (is (number? (u/with-overloaded-ugens (rand 10))))
+  (is (urep/sc-ugen? (u/with-overloaded-ugens (rand 1 :force-ugen)))))

@@ -42,11 +42,11 @@
    "sinh" 34       ; hyperbolic sine
    "cosh" 35       ; hyperbolic cosine
    "tanh" 36       ; hyperbolic tangent
-   ;;"rand" 37     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"rand2" 38    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"linrand" 39  ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"bilinrand" 40; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"sum3rand" 41 ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "rand" 37     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "rand2" 38    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "linrand" 39  ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "bilinrand" 40; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "sum3rand" 41 ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
    "distort" 42    ; distortion
    "softclip" 43   ; distortion
    ;;"coin" 44     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
@@ -121,7 +121,7 @@
 
 ;;the following are Clojure fns that can only take numerical args
 (def NUMERICAL-CLOJURE-FNS
-  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "mod" "abs" "bit-and" "bit-or" "bit-xor"})
+  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "mod" "abs" "bit-and" "bit-or" "bit-xor" "rand"})
 
 (def REVERSE-BINARY-OPS (zipmap (vals BINARY-OPS) (keys BINARY-OPS)))
 

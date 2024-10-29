@@ -47,22 +47,22 @@
 ;;
 ;;/////////////
 
+#_
 (defn rand2 [n]
   (with-overloaded-ugens
-    (- (Math/nextDown (double n))
-       (rand (Math/nextUp (double (* 2 n)))))))
+    (- (rand (* 2 n)) n)))
 
 (demo 2 (let [sines 5
               speed 6]
-          (-> (mix
-                (map #(-> %
+          (->> (range sines)
+               (mapv #(-> %
                           (+ 1)
                           (* 100)
                           sin-osc
-                          (* (max 0 (+ (lf-noise1:kr speed) (line:kr 1 -1 30))))
-                          (pan2 (rand2 1.0)))
-                     (range sines)))
-              (/ sines))))
+                          (* (max 0 (+ (lf-noise1:kr speed)
+                                       (line:kr 1 -1 30))))
+                          (pan2 (rand2 1.0))))
+               mix)))
 
 (stop)
 
