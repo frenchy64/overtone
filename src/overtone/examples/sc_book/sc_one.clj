@@ -374,7 +374,7 @@
 
 ;;Synth("PMCrotale", ["midi", rrand(48, 72).round(1), "tone", rrand(1, 6)])
 
-(pmc-rotale :midi (ranged-rand 48 72) :tone (ranged-rand 1 6))
+(pmc-rotale :midi (rrand 48 72) :tone (ranged-rand 1 6))
 
 (stop)
 
@@ -425,11 +425,11 @@
 ;;)
 
 (demo 60 (let [frames (num-frames houston)
-              rate   [1 1.01]
-              trigger (impulse:kr rate)
-              src (play-buf 1 houston 1 trigger (* frames (line:kr 0 1 60)))
-              env (env-gen:kr (lin 0.01 0.96 0.01) trigger)]
-          (* src env rate)))
+               rate   [1 1.01]
+               trigger (impulse:kr rate)
+               src (play-buf 1 houston 1 trigger (* frames (line:kr 0 1 60)))
+               env (env-gen:kr (lin 0.01 0.96 0.01) trigger)]
+           (* src env rate)))
 (stop)
 
 ;; note how the envelope is used to stop clicking between segments. Contrast with the following
@@ -445,7 +445,7 @@
 ;;{
 ;;        var speed, direction;
 ;;        speed = LFNoise0.kr(12) * 0.2 + 1;
-;;        direction = ]LFClipNoise.kr(1/3);
+;;        direction = LFClipNoise.kr(1/3);
 ;;        PlayBuf.ar(1, ~houston, (speed * direction), loop: 1);
 ;;}.play
 ;;)
@@ -559,9 +559,10 @@
 ;;}.play
 ;;)
 
-(demo 10 (pan2 (* (play-buf 1 houston :loop 1)
-                  (sin-osc (+ 600 (* 500 (lf-noise0:kr 12)))))
-               0.5))
+(demo 10 (out 0
+              (pan2 (* (play-buf 1 houston :loop 1)
+                       (sin-osc (+ 600 (* 500 (lf-noise0:kr 12)))))
+                    0.5)))
 (stop)
 
 ;;
@@ -673,21 +674,22 @@
 
   (future
     (loop []
-      (let [density 1
-            midi (choose [0 2 4 7 9])
-            oct (choose [48 60 72])]
-        (if (weighted-coin density)
-          (do
-            (println "")
-            (println [(+ midi oct) (nth (cycle a) midi) (round-to (/ oct 12) 1)])
-            (pmc-rotale :midi (+ midi oct)
-                        :tone (ranged-rand 1 7)
-                        :art (ranged-rand 0.3 2.0)
-                        :amp (ranged-rand 0.3 0.6)
-                        :pan (ranged-rand -1 1)))
-          (println "rest"))
-        (Thread/sleep 200)
-        (when @cont (recur))))))
+      (when @cont
+        (let [density 1
+              midi (choose [0 2 4 7 9])
+              oct (choose [48 60 72])]
+          (if (weighted-coin density)
+            (do
+              (println "")
+              (println [(+ midi oct) (nth (cycle a) midi) (round-to (/ oct 12) 1)])
+              (pmc-rotale :midi (+ midi oct)
+                          :tone (ranged-rand 1 7)
+                          :art (ranged-rand 0.3 2.0)
+                          :amp (ranged-rand 0.3 0.6)
+                          :pan (ranged-rand -1 1)))
+            (println "rest"))
+          (Thread/sleep 200)
+          (recur))))))
 
 ;; to stop
 (vreset! cont false)
@@ -716,14 +718,12 @@
 
 (demo 15
       (out [0 1]
-           (-> (+ (* (sin-osc 220)  (max 0 (lf-noise1:kr 12)) 1)
-                  (* (sin-osc 440)  (max 0 (lf-noise1:kr 12)) 1/2)
-                  (* (sin-osc 660)  (max 0 (lf-noise1:kr 12)) 1/3)
-                  (* (sin-osc 880)  (max 0 (lf-noise1:kr 12)) 1/4)
-                  (* (sin-osc 1110) (max 0 (lf-noise1:kr 12)) 1/5)
-                  (* (sin-osc 1320) (max 0 (lf-noise1:kr 12)) 1/6))
-               ;; divide by number of input channels
-               (/ 6))))
+           (mix [(* (sin-osc 220)  (max 0 (lf-noise1:kr 12)) 1)
+                     (* (sin-osc 440)  (max 0 (lf-noise1:kr 12)) 1/2)
+                     (* (sin-osc 660)  (max 0 (lf-noise1:kr 12)) 1/3)
+                     (* (sin-osc 880)  (max 0 (lf-noise1:kr 12)) 1/4)
+                     (* (sin-osc 1110) (max 0 (lf-noise1:kr 12)) 1/5)
+                     (* (sin-osc 1320) (max 0 (lf-noise1:kr 12)) 1/6)])))
 (stop)
 
 ;; or the more tunable but equivalent:
@@ -791,12 +791,12 @@
             bells   20
             scale   (mapv midi->hz [60 62 64 67 69])
             mk-bell (fn []
-                      (let [freqs (repeatedly num-res #(* (ranged-rand 1 5) (choose scale)))
-                            amps  (repeatedly num-res #(ranged-rand 0.3 0.9))
-                            rings (repeatedly num-res #(ranged-rand 1 4))
+                      (let [freqs (repeatedly num-res #(* (rrand 1 5) (choose scale)))
+                            amps  (repeatedly num-res #(rrand 0.3 0.9))
+                            rings (repeatedly num-res #(rrand 1.0 4.0))
                             specs [freqs amps rings]
-                            pan (softclip (* 2 (lf-noise1:kr (ranged-rand 3 6))))]
-                        (-> (klank specs (* 0.03 (dust (/ 1 6))))
+                            pan (softclip (* 2 (lf-noise1:kr (rrand 3 6))))]
+                        (-> (klank specs (* 0.03 (dust 1/6)))
                             (pan2 pan))))]
         (out 0 (mix (repeatedly bells mk-bell)))))
 (stop)
