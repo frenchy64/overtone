@@ -47,11 +47,6 @@
 ;;
 ;;/////////////
 
-#_
-(defn rand2 [n]
-  (with-overloaded-ugens
-    (- (rand (* 2 n)) n)))
-
 (demo 2 (let [sines 5
               speed 6]
           (->> (range sines)
@@ -89,11 +84,13 @@
 ;;
 ;;/////////////
 
-(demo 10 (let [noise (lf-noise1 3)
-               saws  (mul-add (lf-saw [5 5.123]) 3 80)
-               freq  (midicps (mul-add noise 24 saws))
-               src   (* 0.4 (sin-osc freq))]
-           (comb-n src 1 0.3 2)))
+(demo 10 (-> (lf-noise1 3)
+             (mul-add 24 (-> (lf-saw [5 5.123])
+                             (mul-add 3 80)))
+             midicps
+             sin-osc
+             (* 0.4)
+             (comb-n 1 0.3 2)))
 (stop)
 
 
