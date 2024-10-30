@@ -2,6 +2,7 @@
   "Simple tests which exercise overtone and make few assertions.
   Ensures successful complilation of overtone and its examples."
   (:require [overtone.config.log :as log]
+            [clj-reload.core :as reload]
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is]]
             [overtone.test-helper :refer [eval-in-temp-ns]]))
@@ -39,7 +40,7 @@
   [example-ns]
   (fn []
     (println "\nRunning example:" example-ns)
-    (require example-ns)
+    (require example-ns :reload)
     (when-let [-main (find-var (symbol (str example-ns) "-main"))]
       ((var-get -main)))))
 

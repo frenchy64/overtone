@@ -303,6 +303,6 @@
   [host path & args]
   (if-let [sig (OSC-TYPE-SIGNATURES path)]
     (apply checked-snd sig host path args)
-    (let [err-string (str "Unknown scsynth OSC path" path)]
+    (let [err-string (str "Unknown scsynth OSC path " (pr-str path))]
       (log/error err-string)
       (throw (Exception. err-string)))))
