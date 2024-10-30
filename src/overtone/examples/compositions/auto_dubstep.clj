@@ -74,7 +74,7 @@
             kick    (clip2 kick 1)
 
             ;; snare is just using gated & over-amplified pink noise
-            snare   (* 3 (pink-noise) (apply + (* (decay (impulse (/ bpm 240) 0.5) [0.4 2]) [1 0.05])))
+            snare   (* 3 (pink-noise) (apply + (decay (impulse (/ bpm 240) 0.5) [0.4 2] [1 0.05])))
             ;; send through band pass filter with peak @ 2kHz
             snare   (+ snare (bpf (* 4 snare) 2000))
             ;; also clip at max vol to distort

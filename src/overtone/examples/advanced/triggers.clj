@@ -8,7 +8,7 @@
 
 ;; define a synth which uses send-trig
 (defsynth wawa [t-id 0]
-  (let [sig (* (var-saw 0.5) (sin-osc))]
+  (let [sig (sin-osc :mul (var-saw 0.5))]
     ;; Audio output
     (out 0 sig)
     ;; Trigger output: 20 times per second, send back volume

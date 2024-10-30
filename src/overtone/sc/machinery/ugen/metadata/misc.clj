@@ -193,7 +193,13 @@
 
               {:name "maxroomsize"
                :default 300.0,
-               :doc "to set the size of the delay lines." }],
+               :doc "to set the size of the delay lines." }
+              {:name    "mul"
+               :default 1.0
+               :doc     "Output will be multiplied by this value."}
+              {:name    "add"
+               :default 0.0
+               :doc     "This value will be added to the output."}],
 
        :rates #{:ar},
        :num-outs 2,

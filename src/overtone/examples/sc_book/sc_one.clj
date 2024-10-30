@@ -809,8 +809,8 @@
                             amps  (repeatedly num-res #(rrand 0.3 0.9))
                             rings (repeatedly num-res #(rrand 1.0 4.0))
                             specs [freqs amps rings]
-                            pan (softclip (* 2 (lf-noise1:kr (rrand 3 6))))]
-                        (-> (klank specs (* 0.03 (dust 1/6)))
+                            pan (softclip (lf-noise1:kr (rrand 3 6) 2))]
+                        (-> (klank specs (dust 1/6 0.03))
                             (pan2 pan))))]
         (out 0 (mix (repeatedly bells mk-bell)))))
 (stop)
