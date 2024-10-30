@@ -9,4 +9,4 @@
 
 (deftest examples-test
   (doseq [ns examples]
-    (require ns :reload)))
+    (is (nil? (require ns :reload)))))
