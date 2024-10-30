@@ -318,7 +318,7 @@
 ;;run all four, then stop all
 (different-tones 550)
 (different-tones :freq 660)
-(different-tones {:freq 880})
+(different-tones :freq 880)
 (different-tones)
 (stop)
 

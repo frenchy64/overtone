@@ -174,7 +174,7 @@
    The args should be passed in the order 'ordered params', 'keyword
    params' such as the following: [1 2 3 :d 4 :f 5] where 1 2 and 3 are
    ordered params and 4 and 5 are named params (associated with :d
-   and :f respectively). Keyword params can provided as a single map.
+   and :f respectively).
 
    If the expected args is the list [:a :b :c :d :f] then the resulting
    map will look as follows: {:a 1 :b 2 :c 3 :d 5 :f 5}. If the defaults
@@ -185,23 +185,19 @@
    It is assumed that the values passed in as the args are *not*
    keywords."
   [args arg-names default-map]
-  (prn args arg-names default-map)
   (loop [args args
          names arg-names
          arg-map default-map]
-    (if (seq args)
+    (if (not (empty? args))
       (if (and
            (keyword? (first args))
            (even? (count args)))
         (merge arg-map (apply hash-map args))
-        (if (and (map? (first args))
-                 (not (next args)))
-          (merge arg-map (first args))
-          (recur (next args)
-                 (next names)
-                 (assoc arg-map
-                        (first names)
-                        (first args)))))
+        (recur (next args)
+               (next names)
+               (assoc arg-map
+                 (first names)
+                 (first args))))
       arg-map)))
 
 (defmacro defunk [fn-name docstring args & body]
