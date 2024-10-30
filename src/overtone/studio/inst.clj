@@ -157,8 +157,8 @@
 
 (defmacro inst
   [sname & args]
-  (ensure-connected!)
-  `(let [[sname# full-name# params# ugens# constants# n-chans# inst-bus#] (pre-inst ~sname ~@args)
+  `(let [_# (boot-server-and-mixer-if-disconnected)
+         [sname# full-name# params# ugens# constants# n-chans# inst-bus#] (pre-inst ~sname ~@args)
          new-inst# (get (:instruments @studio*) full-name#)
          container-group# (or (:group new-inst#)
                               (with-server-sync

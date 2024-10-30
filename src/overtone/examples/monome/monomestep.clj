@@ -1,6 +1,5 @@
 (ns ^:hw overtone.examples.monome.monomestep
   (:use [overtone.live]
-        [clojure.core.match :only [match]]
         [polynome.core :as poly]))
 
 (defonce dub-vol (atom 1))
@@ -73,10 +72,10 @@
     (ctl dubstep  :wob wob)))
 
 (poly/on-press m ::foo (fn [x y s]
-                         (match [x y]
-                           [0 7] (toggle-vol)
-                           [0 _] (toggle-fx x y)
-                           [_ _] (modulate-pitch-wob x y))))
+                         (cond
+                           (and (= x 0) (= y 7)) (toggle-vol)
+                           (zero? x) (toggle-fx x y)
+                           :else (modulate-pitch-wob x y))))
 
 (dubstep)
 ;;(stop)

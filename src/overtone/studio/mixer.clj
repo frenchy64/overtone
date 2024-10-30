@@ -205,6 +205,10 @@
     (boot-server)
     (wait-until-mixer-booted)))
 
+(defn boot-server-and-mixer-if-disconnected []
+  (when (server-disconnected?)
+    (boot-server-and-mixer)))
+
 (defn- setup-studio-groups
   "Setup the studio groups."
   []
