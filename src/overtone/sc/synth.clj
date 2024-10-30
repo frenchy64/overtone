@@ -512,10 +512,13 @@
     (foo [:head 2] 440 :amp 0.3)
     "
   [sdef params this & args]
+  (prn "args" args)
   (let [arg-names         (map keyword (map :name params))
         args              (or args [])
         [target pos args] (extract-target-pos-args args (foundation-default-group) :tail)
+        _ (prn "target" target pos args)
         args              (idify args)
+        _ (prn "idified" args)
         args              (map (fn [arg] (if-let [id (:id arg)]
                                            id
                                            arg))
