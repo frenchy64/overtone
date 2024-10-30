@@ -68,6 +68,7 @@
 (extend-type java.lang.Long to-sc-id* (to-sc-id [v] v))
 (extend-type java.lang.Integer to-sc-id* (to-sc-id [v] v))
 (extend-type java.lang.Float to-sc-id* (to-sc-id [v] v))
+(extend-type clojure.lang.Delay to-sc-id* (to-sc-id [v] (to-sc-id (deref! v))))
 
 
 (defonce ^{:private true} __RECORDS__

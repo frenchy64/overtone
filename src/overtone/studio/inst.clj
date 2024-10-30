@@ -28,10 +28,10 @@
                          volume pan
                          n-chans]
       (fn [this & args]
-        (apply synth-player sdef params this [:tail instance-group] args))
+        (apply synth-player sdef params this [:tail (deref! instance-group)] args))
 
       to-sc-id*
-      (to-sc-id [_] (to-sc-id instance-group)))))
+      (to-sc-id [_] (to-sc-id (deref! instance-group))))))
 
 (derive Inst :overtone.sc.node/node)
 
@@ -99,7 +99,7 @@
 (defmethod inst-fx! :mono
   [inst fx & args]
   (ensure-node-active! inst)
-  (let [fx-group (:fx-group inst)
+  (let [fx-group (deref! (:fx-group inst))
         bus      (:bus inst)
         fx-id    (apply fx [:tail fx-group] :bus bus args)]
     fx-id))
@@ -107,7 +107,7 @@
 (defmethod inst-fx! :stereo
   [inst fx & args]
   (ensure-node-active! inst)
-  (let [fx-group (:fx-group inst)
+  (let [fx-group (deref! (:fx-group inst))
         bus-l    (to-sc-id (:bus inst))
         bus-r    (inc bus-l)
         fx-ids   [(apply fx [:tail fx-group] :bus bus-l args)
@@ -157,31 +157,34 @@
 
 (defmacro inst
   [sname & args]
-  `(let [_# (boot-server-and-mixer-if-disconnected)
-         [sname# full-name# params# ugens# constants# n-chans# inst-bus#] (pre-inst ~sname ~@args)
+  `(let [[sname# full-name# params# ugens# constants# n-chans# inst-bus#] (pre-inst ~sname ~@args)
          new-inst# (get (:instruments @studio*) full-name#)
-         container-group# (or (:group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname# " Container")
-                                        :tail (:instrument-group @studio*))
-                                "whilst creating an inst container group"))
+         container-group# (delay
+                            (or (:group new-inst#)
+                                (with-server-sync
+                                  #(group (str "Inst " sname# " Container")
+                                          :tail (:instrument-group @studio*))
+                                  "whilst creating an inst container group")))
 
-         instance-group#  (or (:instance-group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname#)
-                                        :head container-group#)
-                                "whilst creating an inst instance group"))
+         instance-group#  (delay
+                            (or (:instance-group new-inst#)
+                                (with-server-sync
+                                  #(group (str "Inst " sname#)
+                                          :head (deref! container-group#))
+                                  "whilst creating an inst instance group")))
 
-         fx-group#        (or (:fx-group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname# " FX")
-                                        :tail container-group#)
-                                "whilst creating an inst fx group"))
+         fx-group#        (delay
+                            (or (:fx-group new-inst#)
+                                (with-server-sync
+                                  #(group (str "Inst " sname# " FX")
+                                          :tail (deref! container-group#))
+                                  "whilst creating an inst fx group")))
 
-         imixer#    (or (:mixer new-inst#)
-                        (inst-mixer n-chans#
-                                    [:tail container-group#]
-                                    :in-bus inst-bus#))
+         imixer#    (delay
+                      (or (:mixer new-inst#)
+                          (inst-mixer n-chans#
+                                      [:tail (deref! container-group#)]
+                                      :in-bus inst-bus#)))
          sdef#      (synthdef sname# params# ugens# constants#)
          arg-names# (map :name params#)
          params-with-vals# (map #(assoc % :value (control-proxy-value-atom full-name# %)) params#)

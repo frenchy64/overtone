@@ -150,6 +150,9 @@
   (connection/shutdown-server)
   :server-killed)
 
+(defn- before-ns-unload []
+  (kill-server))
+
 (defn external-server-log
   "Print the external server log."
   []

@@ -13,7 +13,9 @@
                 overtone.examples.midi.basic
                 overtone.examples.monome.satie]})
 
-(defn reload-code [])
+(defn reload-code []
+  (reload/reload
+    {:only :all}))
 (defn reload-server []
   (when-some [f (resolve 'overtone.sc.server/kill-server)]
     (f))
