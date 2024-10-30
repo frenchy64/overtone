@@ -7,12 +7,9 @@
 ;;page 4
 ;;play({SinOsc.ar(LFNoise0.kr(12, mul: 600, add: 1000), 0.3)})
 
-;; just plays channel 0 (left speaker)
-(demo 10 (sin-osc (+ 1000 (* 600 (lf-noise0:kr 12))) 0.3))
-(stop)
-
-(demo 10 (* [0.8 0.8] ;; both speakers
-            (sin-osc (+ 1000 (* 600 (lf-noise0:kr 12))) 0.3)))
+(demo 10 (-> (lf-noise0:kr 12)
+             (mul-add 600 1000)
+             (sin-osc 0.3)))
 (stop)
 
 ;;;;;;;;
@@ -23,8 +20,7 @@
                (-> 1
                    (/ [3 4])
                    lf-noise1
-                   (* 1500)
-                   (+ 1600))
+                   (mul-add 1500 1600))
                0.02))
 (stop)
 
@@ -172,9 +168,10 @@
 ;;)
 
 ;; move mouse around screen while playing
-(demo 10 (let [rate (mouse-x (/ 1 3) 10)
-               amp  (linen:kr :gate (impulse:kr rate), :attack-time 0, :sus-level 1, :release-time (/ 1 rate))]
-           (* [amp amp] (sin-osc))))
+(demo 10 (let [rate (mouse-x 1/3 10)]
+           (-> (impulse:kr rate)
+               (linen:kr 0 1 (/ 1 rate))
+               sin-osc)))
 (stop)
 
 
@@ -199,15 +196,21 @@
 ;;
 ;;///////////// Figure 1.6 Phase modulation with modulator as ratio
 
-(demo 10 (let [r (line:kr :start 1, :end 20, :dur 60)
-               ;;r (+ 7 (* 3 (lf-tri:kr 0.1)))
-               t (impulse:kr r)
-               ;;t (dust:kr r)
-               e (linen:kr :gate t, :attack-time 0, :sus-level 0.5, :release-time (/ 1 r))
-               f (t-rand:kr :lo 1, :hi 10, :trig t)
-               ;;f (* 4 (+ 1 e))
-               ]
-           (* [e e] (blip :freq (* f 100), :numharm f))))
+(demo 10 (let [rate (case 0
+                      0 (line:kr 1 20 60)
+                      1 (-> (lf-tri:kr 0.1)
+                            (mul-add 3 7)))
+               trigger (case 0
+                         0 (impulse:kr rate)
+                         1 (dust:kr rate))
+               envelope (linen:kr trigger 0 0.5 (/ 1 rate))
+               f (case 0
+                   0 (t-rand:kr 1 10 trigger)
+                   1 (* 4 (+ 1 envelope)))]
+           (-> f
+               (* 100)
+               (blip f)
+               (* envelope))))
 (stop)
 
 
@@ -237,17 +240,25 @@
 
 
 
-(demo 10 (let [r (impulse:kr 10)
-               c (t-rand:kr :lo 100, :hi 5000, :trig r)
-               m (t-rand:kr :lo 100, :hi 5000, :trig r)]
-           (* [0.3 0.3] (pm-osc c m 12 0))))
+(demo 10 (let [trigger (impulse:kr 10)
+               carrier (t-rand:kr 100 5000 trigger)
+               modulation (t-rand:kr 100 5000 trigger)]
+           (-> (pm-osc carrier modulation 12 0)
+               (* 0.3))))
 (stop)
 
 ;; move mouse around while playing
 (demo 10 (let [rate 4
-               carrier (+ 700 (* 500 (lf-noise0:kr rate)))
-               mod-ratio (mouse-x :min 1, :max 2)]
-           (* [0.3 0.3] (pm-osc carrier (* carrier mod-ratio) 12 9))))
+               carrier (-> rate 
+                           lf-noise0:kr
+                           (mul-add 500 700))
+               mod-ratio (mouse-x 1 2)]
+           (-> carrier
+               (pm-osc
+                 ;; modulator expressed as ratio, therefore timbre
+                 (* carrier mod-ratio)
+                 12 9)
+               (* 0.3))))
 (stop)
 
 
@@ -276,9 +287,10 @@
 (right-sine)
 (stop)
 
-(defsynth one-tone-only [] (let [freq 440
-                                 src  (sin-osc freq)]
-                             (out 0 src)))
+(defsynth one-tone-only []
+  (let [freq 440
+        src  (sin-osc freq)]
+    (out 0 src)))
 (one-tone-only)
 (stop)
 
@@ -299,7 +311,8 @@
 ;;/////////////
 
 (defsynth different-tones [freq 440]
-  (let [src (* 0.3 (sin-osc freq))]
+  (let [src (-> (sin-osc freq)
+                (* 0.3))]
     (out [0 1] src)))
 
 ;;run all four, then stop all
@@ -390,6 +403,7 @@
 ;;you're running OS X. Feel free to change the following audio paths
 ;;to any other audio file on your disk...
 
+;;TODO different platforms
 (def houston (load-sample "/Applications/SuperCollider.app/Contents/Resources/sounds/a11wlk01-44_1.aiff"))
 (def chooston (load-sample "/Applications/SuperCollider.app/Contents/Resources/sounds/a11wlk01.wav"))
 
@@ -450,7 +464,8 @@
 ;;}.play
 ;;)
 
-(demo 5 (let [speed     (+ 1 (* 0.2 (lf-noise0:kr 12)))
+(demo 5 (let [speed     (-> (lf-noise0:kr 12)
+                            (mul-add 0.2 1))
               direction (lf-clip-noise:kr 1/3)]
           (play-buf 1 houston (* speed direction) :loop 1)))
 (stop)

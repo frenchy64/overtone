@@ -28,10 +28,10 @@
                          volume pan
                          n-chans]
       (fn [this & args]
-        (apply synth-player sdef params this [:tail (deref! instance-group)] args))
+        (apply synth-player sdef params this [:tail (force! instance-group)] args))
 
       to-sc-id*
-      (to-sc-id [_] (to-sc-id (deref! instance-group))))))
+      (to-sc-id [_] (to-sc-id (force! instance-group))))))
 
 (derive Inst :overtone.sc.node/node)
 
