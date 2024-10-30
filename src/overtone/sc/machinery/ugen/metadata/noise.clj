@@ -114,7 +114,13 @@
        :args [{:name "freq",
                :default 500.0
                :doc "approximate rate at which to generate random
-                     values."}]
+                     values."}
+              {:name    "mul"
+               :default 1.0
+               :doc     "Output will be multiplied by this value."}
+              {:name    "add"
+               :default 0.0
+               :doc     "This value will be added to the output."}]
        :rates #{:ar :kr}
        :doc "Generates random values between -1 and 1 at a rate (the
              rate is not guaranteed but approximate)"}
@@ -125,8 +131,13 @@
        :args [{:name "freq",
                :default 500.0
                :doc "approximate rate at which to generate random
-                     values."}]
-
+                     values."}
+              {:name    "mul"
+               :default 1.0
+               :doc     "Output will be multiplied by this value."}
+              {:name    "add"
+               :default 0.0
+               :doc     "This value will be added to the output."}]
        :rates #{:ar :kr}
        :doc "Generates linearly interpolated random values between -1
              and 1 at the supplied rate (the rate is not guaranteed but

@@ -10,7 +10,7 @@ Both the above synth designs are also equivalent to:
 
     (defsynth foo [] (sin-osc :freq 440 :phase 0))
 
-As the default value for phase is 0. The ugen function clearly needs to know how to take these args and munge them about correctly so that a correct synthdef data structure can be created. This work takes place in the namespace overtone.sc.ugen.
+As the default value for phase is 0. The ugen function clearly needs to know how to take these args and munge them about correctly so that a correct synthdef data structure can be created. This work takes place in the namespace overtone.sc.machinery.ugen.fn-gen.
 
 So, how are these functions created and what they do?
 
@@ -25,7 +25,7 @@ The story starts with the ugen metadata. A set of namespaces describing the prop
 
 Here we have three basic keys: `:name`, `:args` and `:doc`. The name `SinOsc` is the exact scsynth name in camelCase. This is the name we need to use within the synthdef. However, it's not necessarily very idiomatic clojure to use camelCase, so we convert it to the hyphenated `sin-osc`. The logic for this is in the fn `overtone-ugen-name`.
 
-The ugen spec metadata ens up in the var `UGEN-SPECS` which is polpulated by the fn `load-ugen-specs` which gathers the raw spec metadata found in the namespaces `overtone.sc.ugen.~@UGEN-NAMESPACES` and then passes these specs through the fn `derive-ugen-specs` which resolves the inheritence tree (which allows a given ugen to extend another thus inheriting its parent's information). Finally the derived specs are then individually passed through the fn `decorate-ugen-spec` which does all of the fancy work.
+The ugen spec metadata ends up in the var `UGEN-SPECS` which is populated by the fn `load-ugen-specs` which gathers the raw spec metadata found in the namespaces `overtone.sc.ugen.~@UGEN-NAMESPACES` and then passes these specs through the fn `derive-ugen-specs` which resolves the inheritence tree (which allows a given ugen to extend another thus inheriting its parent's information). Finally the derived specs are then individually passed through the fn `decorate-ugen-spec` which does all of the fancy work.
 
 * `with-rates`
 * `with-categories`

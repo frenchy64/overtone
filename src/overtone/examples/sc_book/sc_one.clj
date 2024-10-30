@@ -84,8 +84,7 @@
              (mul-add 24 (-> (lf-saw [5 5.123])
                              (mul-add 3 80)))
              midicps
-             sin-osc
-             (* 0.4)
+             (sin-osc :mul 0.4)
              (comb-n 1 0.3 2)))
 (stop)
 
@@ -548,7 +547,7 @@
   (defsynth pulse-ctl [] (out:kr kbus4 (lin-lin (sin-osc:kr 1) -1 1 240 640)))
 
   (defsynth switch [freq 440]
-    (out 0 (* (sin-osc:ar freq) 0.3)))
+    (out 0 (sin-osc:ar freq :mul 0.3)))
 
   (def s (switch))
   (def w (wave-ctl))
