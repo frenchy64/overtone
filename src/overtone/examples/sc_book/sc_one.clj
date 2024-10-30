@@ -169,9 +169,9 @@
 
 ;; move mouse around screen while playing
 (demo 10 (let [rate (mouse-x 1/3 10)]
-           (-> (impulse:kr rate)
-               (linen:kr 0 1 (/ 1 rate))
-               sin-osc)))
+           (-> (sin-osc)
+               (* (-> (impulse:kr rate)
+                      (linen:kr 0 1 (/ 1 rate)))))))
 (stop)
 
 
