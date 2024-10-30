@@ -75,6 +75,6 @@
         'overtone.sc.examples.vosim)))
 
 (deftest examples-test
-  (doseq [ns examples]
+  (doseq [ns (is (seq examples))]
     (testing (pr-str ns)
       (is (nil? (require ns :reload))))))
