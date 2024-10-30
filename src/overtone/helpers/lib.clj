@@ -185,6 +185,7 @@
    It is assumed that the values passed in as the args are *not*
    keywords."
   [args arg-names default-map]
+  (prn args arg-names default-map)
   (loop [args args
          names arg-names
          arg-map default-map]
