@@ -172,7 +172,6 @@
          volume#    (atom DEFAULT-VOLUME)
          pan#       (atom DEFAULT-PAN)
          init# (fn []
-                 (prn "init" full-name#)
                  (locking container-group#
                    (when-not @container-group#
                      (reset! container-group# (with-server-sync
