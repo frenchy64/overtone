@@ -1,6 +1,7 @@
 # Unreleased
 
 ## Added
+- `definst` instruments can now be loaded before server is connected
 
 ## Fixed
 
