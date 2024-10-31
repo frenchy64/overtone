@@ -234,7 +234,7 @@
   "Frees all synth notes for each of the current instruments"
   [_event-info]
   (doseq [[_name inst] (:instruments @studio*)]
-    (group-clear (:instance-group inst))))
+    (group-clear @(:instance-group inst))))
 
 (on-sync-event :reset reset-instruments ::reset-instruments)
 

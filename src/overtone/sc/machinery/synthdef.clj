@@ -353,7 +353,7 @@
   (dosync (alter loaded-synthdefs*
                  (fn [{:keys [synthdefs] :as m}]
                    (-> m
-                       (assoc-in [:synthdefs (:name sdef)] sdef)
+                       (assoc :synthdefs (assoc synthdefs (:name sdef) sdef))
                        (cond->
                          (not (contains? synthdefs (:name sdef)))
                          (update :load-order conj (:name sdef)))))))

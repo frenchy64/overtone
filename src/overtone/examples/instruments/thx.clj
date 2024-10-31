@@ -1,5 +1,5 @@
 (ns overtone.examples.instruments.thx
-  (:use [overtone.live]))
+  (:use [overtone.core]))
 
 ;;Original THX sound simulation by Geirmund Simonsen:
 ;;{
@@ -28,6 +28,7 @@
     (out out-bus
          (* amp (g-verb snd 9 0.7 0)))))
 
+;; (require 'overtone.live)
 ;; play the instrument:
 ;; (def t (thx :amp 2))
 ;; kill it off when you're ready

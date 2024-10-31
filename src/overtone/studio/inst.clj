@@ -117,7 +117,8 @@
 (defn clear-fx
   [inst]
   (ensure-node-active! inst)
-  (group-clear @(:fx-group inst))
+  (some-> @(:fx-group inst) group-clear)
+  (reset! (:fx-group inst) nil)
   :clear)
 
 (defmacro pre-inst
@@ -171,23 +172,25 @@
          volume#    (atom DEFAULT-VOLUME)
          pan#       (atom DEFAULT-PAN)
          init# (fn []
-                 (if new-inst#
-                   ((:init new-inst#))
-                   (do (reset! container-group# (with-server-sync
-                                                  #(group (str "Inst " sname# " Container")
-                                                          :tail (:instrument-group @studio*))
-                                                  "whilst creating an inst container group"))
-                       (reset! instance-group# (with-server-sync
-                                                 #(group (str "Inst " sname#)
-                                                         :head @container-group#)
-                                                 "whilst creating an inst instance group"))
-                       (reset! fx-group# (with-server-sync
-                                           #(group (str "Inst " sname# " FX")
-                                                   :tail @container-group#)
-                                           "whilst creating an inst fx group"))
-                       (reset! imixer# (inst-mixer n-chans#
-                                                   [:tail @container-group#]
-                                                   :in-bus inst-bus#))))
+                 (when-not @container-group#
+                   (reset! container-group# (with-server-sync
+                                              #(group (str "Inst " sname# " Container")
+                                                      :tail (:instrument-group @studio*))
+                                              "whilst creating an inst container group")))
+                 (when-not @instance-group#
+                   (reset! instance-group# (with-server-sync
+                                             #(group (str "Inst " sname#)
+                                                     :head @container-group#)
+                                             "whilst creating an inst instance group")))
+                 (when-not @fx-group#
+                   (reset! fx-group# (with-server-sync
+                                       #(group (str "Inst " sname# " FX")
+                                               :tail @container-group#)
+                                       "whilst creating an inst fx group")))
+                 (when-not @imixer#
+                   (reset! imixer# (inst-mixer n-chans#
+                                               [:tail @container-group#]
+                                               :in-bus inst-bus#)))
                  sdef#)
          inst#      (with-meta
                       (->Inst sname# full-name# params-with-vals# arg-names# sdef#
@@ -338,7 +341,9 @@
    :node-map-n-controls    node-map-n-controls*}
 
   protocols/IKillable
-  {:kill* (fn [this] (group-deep-clear @(:instance-group this)))}
+  {:kill* (fn [this]
+            (some-> @(:instance-group this) group-deep-clear)
+            (reset! (:instance-group this) nil))}
 
   ISynthNodeStatus
   {:node-status            inst-status*

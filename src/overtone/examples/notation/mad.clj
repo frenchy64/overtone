@@ -1,6 +1,6 @@
 (ns overtone.examples.notation.mad
   {:clj-kondo/config '{:linters {:unresolved-symbol {:level :off}}}}
-  (:use overtone.live
+  (:use overtone.core
         overtone.inst.synth))
 
 ; Adapted from the music as data project, cool stuff!
@@ -209,6 +209,7 @@
 
 ; Bach would have had a blast :-)
 (comment
+  (require 'overtone.core)
 (do
     (p (concat
         (glp 20)

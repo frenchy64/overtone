@@ -1,5 +1,5 @@
 (ns overtone.examples.synthesis.cgen-example
-  (:use overtone.live))
+  (:use overtone.core))
 
 (defcgen kick-drum
   "basic synthesised kick drum"
@@ -41,6 +41,9 @@
 
    (clip2 (+ bass kick snare) 1)))
 
-;;(dubstep)
-;;(ctl dubstep :wobble-factor 3)
-;;(stop)
+(comment
+  (require 'overtone.live)
+  (dubstep)
+  (ctl dubstep :wobble-factor 3)
+  (stop)
+  )

@@ -1,8 +1,6 @@
 (ns overtone.examples.timing.one-bar-sequencer
-  (:use [overtone.live]
-        [overtone.inst drum]))
-
-(def metro (metronome 128))
+  (:use overtone.core
+        overtone.inst.drum))
 
 ;; Our bar is a map of beat to instruments to play
 
@@ -20,7 +18,7 @@
 ; Then we play all the instruments for that beat.
 
 (defn player
-  [tick]
+  [tick metro]
   (dorun
     (for [k (keys bar)]
       (let [beat (Math/floor k)
@@ -37,11 +35,13 @@
 (defn run-sequencer
   [m]
   (let [beat (m)]
-    (player beat)
-    (apply-by (m (inc beat))  #'run-sequencer [m])))
+    (player beat m)
+    (apply-by (m (inc beat)) #'run-sequencer [m])))
 
-;; make beats! Edit bar whilst the beat is playing to make live changes.
-(run-sequencer metro)
-
-;; stop
-(stop)
+(comment 
+  (require 'overtone.live)
+  (def metro (metronome 128))
+  ;; make beats! Edit bar whilst the beat is playing to make live changes.
+  (run-sequencer metro)
+  ;; stop
+  (stop))
