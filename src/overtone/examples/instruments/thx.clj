@@ -28,8 +28,11 @@
     (out out-bus
          (* amp (g-verb snd 9 0.7 0)))))
 
-;; (require 'overtone.live)
-;; play the instrument:
-;; (def t (thx :amp 2))
-;; kill it off when you're ready
-;; (ctl t :gate 0)
+(comment
+  (require 'overtone.live)
+  ;; play the instrument:
+  (def t (thx :amp 2))
+  ;; kill it off when you're ready
+  (ctl t :gate 0)
+  (stop)
+  )

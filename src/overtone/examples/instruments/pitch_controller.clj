@@ -1,5 +1,5 @@
 (ns overtone.examples.instruments.pitch-controller
-  (:use overtone.live))
+  (:use overtone.core))
 
 ;; Fire off this synth and connect an instrument/mic.
 ;; The pitch will be detected and used to control the saw waves
@@ -11,5 +11,8 @@
         p   (lag p 1)]
     (out out-bus (saw [p (+ p (* p 0.01))]))))
 
-;;(pitch-controlled-saws)
-;;(stop)
+(comment
+  (require 'overtone.live)
+  (pitch-controlled-saws)
+  (stop)
+  )
