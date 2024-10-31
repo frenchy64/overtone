@@ -107,7 +107,7 @@
     #{deps}))
 
 (defn on-deps
-  "Specify that a function should be called once one or more
+  "Specify that a function should be called once all
    dependencies have been satisfied. The function is run immediately if
    the deps have already been satisfied, otherwise it will run as soon
    as they are.
