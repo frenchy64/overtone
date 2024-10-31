@@ -4,7 +4,7 @@
         overtone.inst.synth))
 
 ; Adapted from the music as data project, cool stuff!
-; http://mad.emotionull.com/
+; https://github.com/jonromero/music-as-data
 
 (definst tone [note 60 amp 0.3 dur 0.4]
   (let [snd (sin-osc (midicps note))
@@ -209,7 +209,8 @@
 
 ; Bach would have had a blast :-)
 (comment
-  (require 'overtone.core)
+  (require 'overtone.live)
+  (do *e)
 (do
     (p (concat
         (glp 20)

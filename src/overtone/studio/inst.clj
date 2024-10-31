@@ -20,18 +20,23 @@
             [overtone.sc.util]
             [overtone.sc.machinery.server.comms :refer [with-server-sync]]))
 
+(defn- inst-invoke [{:keys [sdef params instance-group] :as this} & args]
+  (ensure-connected!)
+  (apply synth-player sdef params this
+         [:tail (or @instance-group
+                    (throw (Exception. (str "nil instance group " (:full-name this)))))] args))
+
 (defonce ^{:private true} __RECORDS__
   (do
     (defrecord-ifn Inst [name full-name params args sdef
                          group instance-group fx-group
                          mixer bus fx-chain
                          volume pan
-                         n-chans init]
-      (fn [this & args]
-        (apply synth-player sdef params this [:tail @instance-group] args))
+                         n-chans]
+      inst-invoke
 
       to-sc-id*
-      (to-sc-id [_] (to-sc-id instance-group)))))
+      (to-sc-id [_] (to-sc-id @instance-group)))))
 
 (derive Inst :overtone.sc.node/node)
 
@@ -81,14 +86,14 @@
   "Control the volume of a single instrument."
   [inst vol]
   (ensure-node-active! inst)
-  (ctl (:mixer inst) :volume vol)
+  (ctl @(:mixer inst) :volume vol)
   (reset! (:volume inst) vol))
 
 (defn inst-pan!
   "Control the pan setting of a single instrument."
   [inst pan]
   (ensure-node-active! inst)
-  (ctl (:mixer inst) :pan pan)
+  (ctl @(:mixer inst) :pan pan)
   (reset! (:pan inst) pan))
 
 (defmulti inst-fx!
@@ -172,34 +177,36 @@
          volume#    (atom DEFAULT-VOLUME)
          pan#       (atom DEFAULT-PAN)
          init# (fn []
-                 (when-not @container-group#
-                   (reset! container-group# (with-server-sync
-                                              #(group (str "Inst " sname# " Container")
-                                                      :tail (:instrument-group @studio*))
-                                              "whilst creating an inst container group")))
-                 (when-not @instance-group#
-                   (reset! instance-group# (with-server-sync
-                                             #(group (str "Inst " sname#)
-                                                     :head @container-group#)
-                                             "whilst creating an inst instance group")))
-                 (when-not @fx-group#
-                   (reset! fx-group# (with-server-sync
-                                       #(group (str "Inst " sname# " FX")
-                                               :tail @container-group#)
-                                       "whilst creating an inst fx group")))
-                 (when-not @imixer#
-                   (reset! imixer# (inst-mixer n-chans#
-                                               [:tail @container-group#]
-                                               :in-bus inst-bus#)))
-                 sdef#)
+                 (prn "init" full-name#)
+                 (locking container-group#
+                   (when-not @container-group#
+                     (reset! container-group# (with-server-sync
+                                                #(group (str "Inst " sname# " Container")
+                                                        :tail (:instrument-group @studio*))
+                                                "whilst creating an inst container group")))
+                   (when-not @instance-group#
+                     (reset! instance-group# (with-server-sync
+                                               #(group (str "Inst " sname#)
+                                                       :head @container-group#)
+                                               "whilst creating an inst instance group")))
+                   (when-not @fx-group#
+                     (reset! fx-group# (with-server-sync
+                                         #(group (str "Inst " sname# " FX")
+                                                 :tail @container-group#)
+                                         "whilst creating an inst fx group")))
+                   (when-not @imixer#
+                     (reset! imixer# (inst-mixer n-chans#
+                                                 [:tail @container-group#]
+                                                 :in-bus inst-bus#)))))
+         sdef# (assoc sdef# :init init#)
          inst#      (with-meta
                       (->Inst sname# full-name# params-with-vals# arg-names# sdef#
                               container-group# instance-group# fx-group#
                               imixer# inst-bus# fx-chain#
                               volume# pan#
-                              n-chans# init#)
+                              n-chans#)
                       {:overtone.helpers.lib/to-string #(str (name (:type %)) ":" (:name %))})]
-     (load-synthdef init#)
+     (load-synthdef sdef#)
      (add-instrument inst#)
      (event :new-inst :inst inst#)
      inst#))
