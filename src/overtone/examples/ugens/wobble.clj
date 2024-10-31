@@ -1,5 +1,5 @@
 (ns overtone.examples.ugens.wobble
-  (:use [overtone.live]))
+  (:use overtone.core))
 
 (defcgen wobble
   "wobble an input source to a specified wobble val (which is designed
@@ -26,10 +26,11 @@
          wob   (+ wob (bpf wob 1500 2))]
      (+ wob (* 0.2 (g-verb wob 9 0.7 0.7))))))
 
+(comment
+  (require 'overtone.live)
+  (demo 3 (wobble (saw (* 50 [0.99 1.01])) 3))
 
-(demo 3 (wobble (saw (* 50 [0.99 1.01])) 3))
-
-(demo 3
-      (auto-wobble
-       (apply + (saw (* 50 [1.01 0.99]))) 5))
-(stop)
+  (demo 3
+        (auto-wobble
+          (apply + (saw (* 50 [1.01 0.99]))) 5))
+  (stop))

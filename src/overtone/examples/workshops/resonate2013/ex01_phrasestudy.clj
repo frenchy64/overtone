@@ -3,8 +3,8 @@
     :author "Karsten Schmidt"}
   overtone.examples.workshops.resonate2013.ex01_phrasestudy
   (:use
-   [overtone.live]
-   [overtone.inst.piano]))
+   overtone.core
+   overtone.inst.piano))
 
 ;; All examples are wrapped in (comment) to stop them from
 ;; executing all at once when the file is loaded...
@@ -13,6 +13,7 @@
 ;; Selection of a whole form (in Eclipse) can be done easily by clicking in
 ;; front of the opening bracket and then pressing Command+Shift+right...
 (comment
+  (require 'overtone.live)
   (piano 60)
   (piano (note :c4)) ; 60
   (piano (note :d4)) ; 62

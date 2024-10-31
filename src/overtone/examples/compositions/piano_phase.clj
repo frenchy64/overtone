@@ -1,5 +1,5 @@
 (ns overtone.examples.compositions.piano-phase
-  (:use overtone.live
+  (:use overtone.core
         overtone.inst.sampled-piano))
 
 ;; Steve Reich's Piano Phase
@@ -18,8 +18,10 @@
 
 (def num-notes 1000)
 
-(do
-  (player (now) 338 (take num-notes (cycle piece)))
-  (player (now) 335 (take num-notes (cycle piece))))
+(comment
+  (require 'overtone.live)
+  (do
+    (player (now) 338 (take num-notes (cycle piece)))
+    (player (now) 335 (take num-notes (cycle piece))))
 
-;;(stop)
+  (stop))

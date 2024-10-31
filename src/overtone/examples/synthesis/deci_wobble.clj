@@ -1,5 +1,5 @@
 (ns overtone.examples.synthesis.deci-wobble
-  (:use overtone.live))
+  (:use overtone.core))
 
 ;; Adapted from the Decimator Wobble Bass described here:
 ;; http://www.phrontist.org/2010/06/decimator-wobble-bass/
@@ -27,5 +27,7 @@
     (out 0 snd)))
 
 ;; to play:
-;; (deci-wobble)
-;; (stop)
+(comment
+  (require 'overtone.live)
+  (deci-wobble)
+  (stop))

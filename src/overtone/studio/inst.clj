@@ -28,10 +28,10 @@
                          volume pan
                          n-chans]
       (fn [this & args]
-        (apply synth-player sdef params this [:tail instance-group] args))
+        (apply synth-player sdef params this [:tail @instance-group] args))
 
       to-sc-id*
-      (to-sc-id [_] (to-sc-id instance-group)))))
+      (to-sc-id [_] (to-sc-id @instance-group)))))
 
 (derive Inst :overtone.sc.node/node)
 
@@ -81,14 +81,14 @@
   "Control the volume of a single instrument."
   [inst vol]
   (ensure-node-active! inst)
-  (ctl (:mixer inst) :volume vol)
+  (ctl @(:mixer inst) :volume vol)
   (reset! (:volume inst) vol))
 
 (defn inst-pan!
   "Control the pan setting of a single instrument."
   [inst pan]
   (ensure-node-active! inst)
-  (ctl (:mixer inst) :pan pan)
+  (ctl @(:mixer inst) :pan pan)
   (reset! (:pan inst) pan))
 
 (defmulti inst-fx!
@@ -99,7 +99,7 @@
 (defmethod inst-fx! :mono
   [inst fx & args]
   (ensure-node-active! inst)
-  (let [fx-group (:fx-group inst)
+  (let [fx-group @(:fx-group inst)
         bus      (:bus inst)
         fx-id    (apply fx [:tail fx-group] :bus bus args)]
     fx-id))
@@ -107,7 +107,7 @@
 (defmethod inst-fx! :stereo
   [inst fx & args]
   (ensure-node-active! inst)
-  (let [fx-group (:fx-group inst)
+  (let [fx-group @(:fx-group inst)
         bus-l    (to-sc-id (:bus inst))
         bus-r    (inc bus-l)
         fx-ids   [(apply fx [:tail fx-group] :bus bus-l args)
@@ -117,7 +117,8 @@
 (defn clear-fx
   [inst]
   (ensure-node-active! inst)
-  (group-clear (:fx-group inst))
+  (some-> @(:fx-group inst) group-clear)
+  (reset! (:fx-group inst) nil)
   :clear)
 
 (defmacro pre-inst
@@ -157,37 +158,41 @@
 
 (defmacro inst
   [sname & args]
-  (ensure-connected!)
   `(let [[sname# full-name# params# ugens# constants# n-chans# inst-bus#] (pre-inst ~sname ~@args)
          new-inst# (get (:instruments @studio*) full-name#)
-         container-group# (or (:group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname# " Container")
-                                        :tail (:instrument-group @studio*))
-                                "whilst creating an inst container group"))
-
-         instance-group#  (or (:instance-group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname#)
-                                        :head container-group#)
-                                "whilst creating an inst instance group"))
-
-         fx-group#        (or (:fx-group new-inst#)
-                              (with-server-sync
-                                #(group (str "Inst " sname# " FX")
-                                        :tail container-group#)
-                                "whilst creating an inst fx group"))
-
-         imixer#    (or (:mixer new-inst#)
-                        (inst-mixer n-chans#
-                                    [:tail container-group#]
-                                    :in-bus inst-bus#))
+         ;; share state with previous instrument
+         container-group# (or (:group new-inst#) (atom nil))
+         instance-group#  (or (:instance-group new-inst#) (atom nil))
+         fx-group#        (or (:fx-group new-inst#) (atom nil))
+         imixer#          (or (:mixer new-inst#) (atom nil))
          sdef#      (synthdef sname# params# ugens# constants#)
          arg-names# (map :name params#)
          params-with-vals# (map #(assoc % :value (control-proxy-value-atom full-name# %)) params#)
          fx-chain#  []
          volume#    (atom DEFAULT-VOLUME)
          pan#       (atom DEFAULT-PAN)
+         init# (fn []
+                 (locking container-group#
+                   (when-not @container-group#
+                     (reset! container-group# (with-server-sync
+                                                #(group (str "Inst " sname# " Container")
+                                                        :tail (:instrument-group @studio*))
+                                                "whilst creating an inst container group")))
+                   (when-not @instance-group#
+                     (reset! instance-group# (with-server-sync
+                                               #(group (str "Inst " sname#)
+                                                       :head @container-group#)
+                                               "whilst creating an inst instance group")))
+                   (when-not @fx-group#
+                     (reset! fx-group# (with-server-sync
+                                         #(group (str "Inst " sname# " FX")
+                                                 :tail @container-group#)
+                                         "whilst creating an inst fx group")))
+                   (when-not @imixer#
+                     (reset! imixer# (inst-mixer n-chans#
+                                                 [:tail @container-group#]
+                                                 :in-bus inst-bus#)))))
+         sdef# (assoc sdef# :init init#)
          inst#      (with-meta
                       (->Inst sname# full-name# params-with-vals# arg-names# sdef#
                               container-group# instance-group# fx-group#
@@ -307,21 +312,21 @@
                       (:group inst)
                       (:instance-group inst)
                       (:mixer inst)]]
-      (node-block-until-ready sub-node))))
+      (node-block-until-ready @sub-node))))
 
 (defn- inst-status*
   [inst]
-  (let [sub-nodes [(:fx-group inst)
-                   (:group inst)
-                   (:instance-group inst)
-                   (:mixer inst)]]
+  (let [sub-nodes (mapv (comp deref :status deref)
+                        [(:fx-group inst)
+                         (:group inst)
+                         (:instance-group inst)
+                         (:mixer inst)])]
     (cond
-     (some #(= :loading @(:status %)) sub-nodes) :loading
-     (some #(= :destroyed @(:status %)) sub-nodes) :destroyed
-     (some #(= :paused @(:status %)) sub-nodes) :paused
-     (every? #(= :live @(:status %)) sub-nodes) :live
-     :else (throw (Exception. "Unknown instrument sub-node state: "
-                              (with-out-str (doseq [n sub-nodes] (pr n))))))))
+     (some #(= :loading %) sub-nodes) :loading
+     (some #(= :destroyed %) sub-nodes) :destroyed
+     (some #(= :paused %) sub-nodes) :paused
+     (every? #(= :live %) sub-nodes) :live
+     :else (throw (Exception. "Unknown instrument sub-node state: " (pr-str sub-nodes))))))
 
 (extend Inst
   ISynthNode
@@ -337,7 +342,9 @@
    :node-map-n-controls    node-map-n-controls*}
 
   protocols/IKillable
-  {:kill* (fn [this] (group-deep-clear (:instance-group this)))}
+  {:kill* (fn [this]
+            (some-> @(:instance-group this) group-deep-clear)
+            (reset! (:instance-group this) nil))}
 
   ISynthNodeStatus
   {:node-status            inst-status*

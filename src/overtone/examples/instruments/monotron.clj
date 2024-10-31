@@ -1,7 +1,5 @@
 (ns overtone.examples.instruments.monotron
-  (:use overtone.live))
-
-;; (use 'overtone.live)
+  (:use overtone.core))
 
 ;; ======================================================================
 ;; Monotron Clone by Roger Allen.
@@ -40,6 +38,8 @@
         ]
     (out 0 (pan2 (* volume VCF) pan))))
 
+(comment
+  (require 'overtone.live)
 ;; ======================================================================
 ;; create an instance of the synth
 (def N0 (monotron 40 0.8 1 0.0 2.5 350.0 800.0 3.0))
@@ -56,3 +56,6 @@
 
 ;; for when you're done.  kill all or just some of the notes
 (kill N0)
+
+(stop)
+)

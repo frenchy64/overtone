@@ -1,5 +1,5 @@
 (ns overtone.examples.instruments.space
-  (:use overtone.live))
+  (:use overtone.core))
 
 ;; Recipe from Mitchell Sigman (2011) Steal this Sound. Milwaukee, WI: Hal Leonard Books
 ;; Adapted from a translated version by Nick Collins
@@ -48,6 +48,9 @@
                                               1))))]
     (out out-bus (* env amp (pan2 y)))))
 
-;;(def st (space-theremin :out-bus 10 :amp 0.8 :cutoff 1000))
-;;(space-reverb [:after st] :in-bus 10)
-;;(stop)
+(comment
+  (require 'overtone.live)
+  (def st (space-theremin :out-bus 10 :amp 0.8 :cutoff 1000))
+  (space-reverb [:after st] :in-bus 10)
+  (stop)
+  )

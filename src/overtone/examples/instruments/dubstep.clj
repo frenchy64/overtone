@@ -1,5 +1,5 @@
 (ns overtone.examples.instruments.dubstep
-  (:use [overtone.core]))
+  (:use overtone.core))
 
 (defsynth dubstep [bpm 120 wobble 1 note 50 snare-vol 1 kick-vol 1 v 1 out-bus 0]
  (let [trig (impulse:kr (/ bpm 120))
@@ -23,6 +23,7 @@
    (out out-bus    (* v (clip2 (+ wob (* kick-vol kick) (* snare-vol snare)) 1)))))
 
 (comment
+  (require 'overtone.live)
   ;;Control the dubstep synth with the following:
   (def d (dubstep))
   (ctl d :wobble 8)
@@ -106,6 +107,6 @@
 
     (poly/on-press m (fn [x y s]
                        (poly/toggle-led m x y))))
+  (stop)
 )
 
-;;(stop)

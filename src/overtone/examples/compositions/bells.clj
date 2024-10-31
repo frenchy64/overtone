@@ -1,5 +1,5 @@
 (ns overtone.examples.compositions.bells
-  (:use [overtone.live]))
+  (:use overtone.core))
 
 ;; http://computermusicresource.com/Simple.bell.tutorial.html
 (def dull-partials
@@ -70,7 +70,7 @@
 (def bell-metro  (metronome 400))
 
 ;; Two lines - the i-v loop that sort of sounds right
-;; and the melody. _ indidcates a rest, we don't have to worry
+;; and the melody. _ indicates a rest, we don't have to worry
 ;; about durations as this is percussion!
 (def kije-troika-intervals
   (let [_ nil]
@@ -112,8 +112,11 @@
   []
   (play-bells (bell-metro) (map cycle troika-hz)))
 
-;; (pretty-bell 440) ;; sounds a bit woodblock
-;; (pretty-bell 2000 7.00) ;; diiiiiiiiinnng
-;; (dull-bell 600 5.0) ;;  ddddddonnnngg
-;; (runner) ;; happy xmas
-;; (stop)
+(comment
+  (require 'overtone.live)
+  (pretty-bell 440) ;; sounds a bit woodblock
+  (pretty-bell 2000 7.00) ;; diiiiiiiiinnng
+  (dull-bell 600 5.0) ;;  ddddddonnnngg
+  (runner) ;; happy xmas
+  (stop)
+  )

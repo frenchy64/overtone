@@ -1,10 +1,10 @@
 (ns overtone.examples.notation.mad
   {:clj-kondo/config '{:linters {:unresolved-symbol {:level :off}}}}
-  (:use overtone.live
+  (:use overtone.core
         overtone.inst.synth))
 
 ; Adapted from the music as data project, cool stuff!
-; http://mad.emotionull.com/
+; https://github.com/jonromero/music-as-data
 
 (definst tone [note 60 amp 0.3 dur 0.4]
   (let [snd (sin-osc (midicps note))
@@ -209,17 +209,17 @@
 
 ; Bach would have had a blast :-)
 (comment
-(do
-    (p (concat
-        (glp 20)
-        (reverse (glp 20))
-        (transpose (glp 20) 4)
-        (glp 20)
-        ))
-    (p (concat
-        (grp 20)
-        (transpose (reverse (grp 20)) -12)
-        (grp 20)
-        (grp 20)
-        )))
+  (require 'overtone.live)
+  (p (concat
+       (glp 20)
+       (reverse (glp 20))
+       (transpose (glp 20) 4)
+       (glp 20)
+       ))
+  (p (concat
+       (grp 20)
+       (transpose (reverse (grp 20)) -12)
+       (grp 20)
+       (grp 20)
+       ))
   )

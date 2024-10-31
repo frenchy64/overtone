@@ -3,8 +3,8 @@
     :author "Karsten Schmidt"}
   overtone.examples.workshops.resonate2013.ex02_bday
   (:use
-   [overtone.live]
-   [overtone.inst.piano]))
+   overtone.core
+   overtone.inst.piano))
 
 (defn bpm
   "Higher order function. Returns another fn to compute the
@@ -63,6 +63,7 @@
    melody))
 
 (comment
+  (require 'overtone.live)
   ;; Play the original Happy Birthday tune in F4 major
   (play-tune piano 120 :f4 :major melody)
   ;; The following experiments go ever further away from the original melody...

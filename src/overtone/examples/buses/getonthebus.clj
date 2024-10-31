@@ -1,5 +1,5 @@
 (ns overtone.examples.buses.getonthebus
-  (:use overtone.live))
+  (:use overtone.core))
 
 ;; Buses are like wires or pipes that you can use to connect the output
 ;; of one synth to the inputs of one or more other synths.
@@ -25,8 +25,10 @@
 
 ;; We use the defonce construct to avoid new buses being created and
 ;; assigned accidentally, if the forms get re-evaluated.
-(defonce tri-bus (audio-bus))
-(defonce sin-bus (audio-bus))
+(comment
+  (do (defonce tri-bus (audio-bus))
+      (defonce sin-bus (audio-bus)))
+  )
 
 ;; These are synths created to send data down the buses.
 ;; They are set up so that you can modify both the bus they output on and
@@ -50,9 +52,11 @@
 ;; The way to gain control over the order of execution within the synthesis tree
 ;; is to use groups. Let's create some now:
 
-(defonce main-g (group "get-on-the-bus main"))
-(defonce early-g (group "early birds" :head main-g))
-(defonce later-g (group "latecomers" :after early-g))
+(comment
+  (do (defonce main-g (group "get-on-the-bus main"))
+      (defonce early-g (group "early birds" :head main-g))
+      (defonce later-g (group "latecomers" :after early-g)))
+  )
 
 ;; Let's create some source synths that will send signals on our buses. Let's
 ;; also put them in the early group to ensure that their signals get sent first.
@@ -68,7 +72,9 @@
 
 ;; We can verify that they're running by viewing the node tree. We can do this
 ;; easily with the following fn:
-(pp-node-tree)
+(comment
+  (pp-node-tree)
+  )
 
 ;; This will print the current synthesis node-tree to the REPL. This can get pretty
 ;; hairy and large, but if you've only evaluated this tutorial since you started

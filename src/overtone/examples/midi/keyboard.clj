@@ -1,5 +1,5 @@
 (ns overtone.examples.midi.keyboard
-  (:use overtone.live))
+  (:use overtone.core))
 
 (definst ding
   [note 60 velocity 100]
@@ -181,6 +181,8 @@
         snd  (sin-osc freq)
         env  (env-gen (adsr 0.001 0.1 0.6 0.3) (or gate sustain) :action FREE)]
     (* amp env snd)))
+
+;(require 'overtone.live)
 
 ; Start an instrument player.
 ;(def sustain-ding-player (inst-player sustain-ding))
