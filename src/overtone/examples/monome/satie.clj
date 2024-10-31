@@ -1,8 +1,6 @@
 (ns ^:hw overtone.examples.monome.satie
-  (:use [clojure.core.match :only [match]]
-        [overtone.live]
-        [overtone.inst sampled-piano])
-  (:require [polynome.core :as poly]))
+  (:use overtone.core
+        overtone.inst.sampled-piano))
 
 ;;Erik Satie Gnossienne No. 1
 (def phrase1a [:iii :v :iv# :iii :iii :ii# :iii :ii#])
@@ -95,13 +93,19 @@
         (sampled-piano p (vol-mul amp)))
       (sampled-piano pitch (vol-mul amp)))))
 
-(defonce m (poly/init "/dev/tty.usbserial-m64-0790"))
+(comment
+  (require 'overtone.live)
 
-(poly/on-press m (fn [x y s]
-                   (match [x y]
-                          [7 _] (reset-pos)
-                          [_ 0] (play-next-lh (+ (rand-int 5) (* 12 (+ x 4))))
-                          [_ 7] (play-next-rh (+ (rand-int 5) (* 12 (+ x 4)))))))
+  ;;FIXME
+  (require '[polynome.core :as poly])
+  (defonce m (poly/init "/dev/tty.usbserial-m64-0790"))
 
-;;(poly/remove-all-callbacks m)
-;;(poly/disconnect m)
+  (poly/on-press m (fn [x y s]
+                     (cond
+                       (= x 7) (reset-pos)
+                       (= y 0) (play-next-lh (+ (rand-int 5) (* 12 (+ x 4))))
+                       (= y 7) (play-next-rh (+ (rand-int 5) (* 12 (+ x 4)))))))
+
+  (poly/remove-all-callbacks m)
+  (poly/disconnect m)
+  )

@@ -105,7 +105,9 @@
 (def count-down (sample (freesound-path 71128)))
 
 ;; Play it unmodified:
-;;(def cd-s (count-down b))
+(comment
+  (def cd-s (count-down b))
+  )
 
 ;; From Designing Sound in SuperCollider
 (defsynth schroeder-reverb-countdown
