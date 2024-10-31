@@ -15,4 +15,4 @@
                         :aux              {}}))
 
 (comment
-  @studio*)
+  (:instrument-group @studio*))

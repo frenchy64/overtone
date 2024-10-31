@@ -349,16 +349,17 @@
   synthdef loading is delayed until the server has succesfully
   connected."
   [sdef]
-  (ensure-synthdef! sdef)
   (dosync (alter loaded-synthdefs* assoc (:name sdef) sdef))
-
   (when (server-connected?)
-    (with-server-sync
-      #(snd "/d_recv" (synthdef-bytes sdef))
-      (str "whilst loading synthdef " (:name sdef)))))
+    (let [sdef (if (fn? sdef) (sdef) sdef)]
+      (ensure-synthdef! sdef)
+      (with-server-sync
+        #(snd "/d_recv" (synthdef-bytes sdef))
+        (str "whilst loading synthdef " (:name sdef))))))
 
 (defn- load-all-synthdefs []
-  (doseq [[sname sdef] @loaded-synthdefs*]
+  (doseq [[sname sdef] @loaded-synthdefs*
+          :let [sdef (if (fn? sdef) (sdef) sdef)]]
     ;; (Thread/sleep 1000)
     (snd "/d_recv" (synthdef-bytes sdef)))
   (satisfy-deps :synthdefs-loaded))
