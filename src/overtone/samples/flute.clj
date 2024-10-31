@@ -1,5 +1,5 @@
 (ns overtone.samples.flute
-  (:use [overtone.core]))
+  (:use overtone.live))
 
 (defn- registered-vibrato-samples     [] (registered-assets ::TransverseFluteTenutoVibrato))
 (defn- registered-non-vibrato-samples [] (registered-assets ::TransverseFluteTenutoNonVibrato))
