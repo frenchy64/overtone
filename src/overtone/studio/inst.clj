@@ -20,12 +20,6 @@
             [overtone.sc.util]
             [overtone.sc.machinery.server.comms :refer [with-server-sync]]))
 
-(defn- inst-invoke [{:keys [sdef params instance-group] :as this} & args]
-  (ensure-connected!)
-  (apply synth-player sdef params this
-         [:tail (or @instance-group
-                    (throw (Exception. (str "nil instance group " (:full-name this)))))] args))
-
 (defonce ^{:private true} __RECORDS__
   (do
     (defrecord-ifn Inst [name full-name params args sdef
@@ -33,7 +27,8 @@
                          mixer bus fx-chain
                          volume pan
                          n-chans]
-      inst-invoke
+      (fn [this & args]
+        (apply synth-player sdef params this [:tail @instance-group] args))
 
       to-sc-id*
       (to-sc-id [_] (to-sc-id @instance-group)))))
