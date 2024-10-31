@@ -1,5 +1,5 @@
 (ns overtone.examples.timing.internal-sequencer
-  (:use [overtone.live]))
+  (:use overtone.core))
 
 ;; A fully server-side sample sequencer.
 ;; =====================================
@@ -10,17 +10,6 @@
 ;; the next bar/chunk to be scheduled) and you can use a global pulse to
 ;; drive both the timing and to also modulate aspects of the synthesis
 ;; so that the modulations are sympathetic to the rhythms being played.
-
-;; First, let's create some sequencer buffers for specifying which beat
-;; to trigger a sample. This will be our core data structure for a basic
-;; emulation of an 8-step sequencer. A buffer is like a Clojure vector,
-;; except it lives on the server and may only contain floats. Buffers
-;; are initialised to have all values be 0.0
-
-(defonce buf-0 (buffer 8))
-(defonce buf-1 (buffer 8))
-(defonce buf-2 (buffer 8))
-(defonce buf-3 (buffer 8))
 
 ;; Next let's create some timing buses. These can be visualised as
 ;; 'patch cables' - wires that carry pulse signals that may be
@@ -51,13 +40,6 @@
 
 (defsynth beat-cnt []
   (out:kr beat-cnt-bus (pulse-count (in:kr beat-trg-bus))))
-
-;; Now we get a little close to the sounds. Here's four nice sounding
-;; samples from Freesound.org
-(def kick-s (freesound 777))
-(def click-s (freesound 406))
-(def boom-s (freesound 33637))
-(def subby-s (freesound 25649))
 
 ;; Here's a synth for playing back the samples with a bit of modulation
 ;; to keep things interesting.
@@ -131,8 +113,28 @@
 
     (* amp output (line 1 0 10 FREE))))
 
+(comment
+  (require 'overtone.live)
 
 ;; OK, let's make some noise!
+
+;; First, let's create some sequencer buffers for specifying which beat
+;; to trigger a sample. This will be our core data structure for a basic
+;; emulation of an 8-step sequencer. A buffer is like a Clojure vector,
+;; except it lives on the server and may only contain floats. Buffers
+;; are initialised to have all values be 0.0
+
+(do (defonce buf-0 (buffer 8))
+    (defonce buf-1 (buffer 8))
+    (defonce buf-2 (buffer 8))
+    (defonce buf-3 (buffer 8)))
+
+;; Now we get a little closer to the sounds. Here's four nice sounding
+;; samples from Freesound.org
+(def kick-s (freesound 777))
+(def click-s (freesound 406))
+(def boom-s (freesound 33637))
+(def subby-s (freesound 25649))
 
 ;; Now, let's start up all the synths:
 (do
@@ -218,5 +220,6 @@
 (supersaw2 (midi->hz 69) :amp 1 :fil-mul ssaw-fil-mul :rq ssaw-rq)
 
 ;; modify saw params on the fly too...
-;;(ctl supersaw2 :fil-mul 4 :rq 0.2)
-(stop)
+  (ctl supersaw2 :fil-mul 4 :rq 0.2)
+  (stop)
+  )
