@@ -11,7 +11,8 @@
 
 - [#557](https://github.com/overtone/overtone/issues/557): envelope description array generators have line numbers for jump-to-definition purposes
 
-- fix reloading samples
+- reloading samples on server reconnection no longer throws
+- wait until samples are reloaded for server to be ready
 
 ## Changed
 - `overtone.sc.ugen-collide/binary-div-op` ugen has been renamed `overtone.sc.ugen-collide//`
