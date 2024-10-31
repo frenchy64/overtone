@@ -312,7 +312,7 @@
       (load-sample* (:path smpl) (:args smpl)))
     (satisfy-deps :samples-loaded)))
 
-(on-deps :server-ready ::load-all-samples reload-all-samples)
+(on-deps :server-connected ::load-all-samples reload-all-samples)
 
 (defn- free-loaded-sample
   [smpl]
