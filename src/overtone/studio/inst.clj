@@ -28,7 +28,7 @@
                          volume pan
                          n-chans init]
       (fn [this & args]
-        (apply synth-player sdef params this [:tail instance-group] args))
+        (apply synth-player sdef params this [:tail @instance-group] args))
 
       to-sc-id*
       (to-sc-id [_] (to-sc-id instance-group)))))
@@ -322,8 +322,7 @@
      (some #(= :destroyed %) sub-nodes) :destroyed
      (some #(= :paused %) sub-nodes) :paused
      (every? #(= :live %) sub-nodes) :live
-     :else (throw (Exception. "Unknown instrument sub-node state: "
-                              (with-out-str (doseq [n sub-nodes] (pr n))))))))
+     :else (throw (Exception. "Unknown instrument sub-node state: " (pr-str sub-nodes))))))
 
 (extend Inst
   ISynthNode
