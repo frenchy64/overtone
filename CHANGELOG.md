@@ -1,6 +1,7 @@
 # Unreleased
 
 ## Added
+- `definst` instruments can now be loaded before server is connected
 
 ## Fixed
 
@@ -11,6 +12,8 @@
 - [#557](https://github.com/overtone/overtone/issues/557): envelope description array generators have line numbers for jump-to-definition purposes
 
 - fix double-eval for `overtone.sc.server/at{-offset}` macros
+- reloading samples on server reconnection no longer throws
+- wait until samples are reloaded for server to be ready
 
 ## Changed
 - `overtone.sc.ugen-collide/binary-div-op` ugen has been renamed `overtone.sc.ugen-collide//`

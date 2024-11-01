@@ -91,7 +91,8 @@
     (catch Exception _
       (log/error "Can't clear message queue and groups - server might have died."))))
 
-(on-deps [:server-connected :foundation-groups-created :synthdefs-loaded :hw-audio-buses-reserved] ::signal-server-ready
+(on-deps [:server-connected :foundation-groups-created :synthdefs-loaded :samples-loaded :hw-audio-buses-reserved]
+         ::signal-server-ready
          #(satisfy-deps :server-ready))
 
 (on-sync-event :shutdown clear-msg-queue-and-groups ::free-all-nodes)
@@ -228,13 +229,14 @@
   []
   (setup-studio-groups))
 
-(on-deps :server-ready ::setup-studio-groups setup-studio)
+(on-deps :foundation-groups-created ::setup-studio-groups setup-studio)
 
 (defn reset-instruments
   "Frees all synth notes for each of the current instruments"
   [_event-info]
   (doseq [[_name inst] (:instruments @studio*)]
-    (group-clear (:instance-group inst))))
+    (group-clear @(:instance-group inst))
+    (reset! (:instance-group inst) nil)))
 
 (on-sync-event :reset reset-instruments ::reset-instruments)
 
@@ -257,4 +259,5 @@
   (let [[{:keys [instruments]} _]
         (swap-vals! studio* assoc :instruments {})]
     (doseq [[_name inst] instruments]
-      (group-free (:group inst)))))
+      (group-free @(:group inst))
+      (reset! (:group inst) nil))))

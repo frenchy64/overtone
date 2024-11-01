@@ -335,7 +335,8 @@
         vals (:params sdef)]
   (apply hash-map (interleave names vals))))
 
-(defonce loaded-synthdefs* (ref {}))
+(defonce loaded-synthdefs* (ref {:synthdefs {}
+                                 :load-order []}))
 
 ;; ### Synth Definition
 ;;
@@ -346,24 +347,34 @@
   "Synchronously load an Overtone synth definition onto the audio
   server. The synthdef is also stored so that it can be re-loaded if the
   server gets rebooted. If the server is currently not running, the
-  synthdef loading is delayed until the server has succesfully
+  synthdef loading is delayed until the server has successfully
   connected."
   [sdef]
   (ensure-synthdef! sdef)
-  (dosync (alter loaded-synthdefs* assoc (:name sdef) sdef))
-
+  (dosync (alter loaded-synthdefs*
+                 (fn [{:keys [synthdefs] :as m}]
+                   (-> m
+                       (assoc :synthdefs (assoc synthdefs (:name sdef) sdef))
+                       (cond->
+                         (not (contains? synthdefs (:name sdef)))
+                         (update :load-order conj (:name sdef)))))))
   (when (server-connected?)
-    (with-server-sync
-      #(snd "/d_recv" (synthdef-bytes sdef))
-      (str "whilst loading synthdef " (:name sdef)))))
+    (let [{:keys [init]} sdef]
+      (when init (init))
+      (with-server-sync
+        #(snd "/d_recv" (synthdef-bytes sdef))
+        (str "whilst loading synthdef " (:name sdef))))))
 
 (defn- load-all-synthdefs []
-  (doseq [[sname sdef] @loaded-synthdefs*]
-    ;; (Thread/sleep 1000)
-    (snd "/d_recv" (synthdef-bytes sdef)))
+  (let [{:keys [load-order synthdefs]} @loaded-synthdefs*]
+    (doseq [sname load-order
+            :let [{:keys [init] :as sdef} (synthdefs sname)]]
+      (when init (init))
+      ;; (Thread/sleep 1000)
+      (snd "/d_recv" (synthdef-bytes sdef))))
   (satisfy-deps :synthdefs-loaded))
 
-(on-deps :server-connected ::load-all-synthdefs load-all-synthdefs)
+(on-deps :studio-setup-completed ::load-all-synthdefs load-all-synthdefs)
 
 (defn load-synth-file
   "Load a synth definition file onto the audio server."
