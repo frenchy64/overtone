@@ -234,7 +234,8 @@
   "Frees all synth notes for each of the current instruments"
   [_event-info]
   (doseq [[_name inst] (:instruments @studio*)]
-    (group-clear (:instance-group inst))))
+    (group-clear @(:instance-group inst))
+    (reset! (:instance-group inst) nil)))
 
 (on-sync-event :reset reset-instruments ::reset-instruments)
 
@@ -257,4 +258,11 @@
   (let [[{:keys [instruments]} _]
         (swap-vals! studio* assoc :instruments {})]
     (doseq [[_name inst] instruments]
-      (group-free (:group inst)))))
+      ;(group-free @(:instance-group inst))
+      ;;FIXME some/all of these can by SynthGroup instead of Atom
+      ;; test by loading instruments, then starting/stopping server
+      (reset! (:instance-group inst) nil)
+      ;(group-free @(:group inst))
+      (reset! (:group inst) nil)
+      (reset! (:fx-group inst) nil)
+      (reset! (:mixer inst) nil))))

@@ -1,6 +1,7 @@
 # Unreleased
 
 ## Added
+- `definst` instruments can now be loaded before server is connected
 
 ## Fixed
 
@@ -12,6 +13,8 @@
 
 - fix double-eval for `overtone.sc.server/at{-offset}` macros
 - setup studio groups only after foundational groups
+- reloading samples on server reconnection no longer throws
+- wait until samples are reloaded for server to be ready
 
 ## Changed
 - `overtone.sc.ugen-collide/binary-div-op` ugen has been renamed `overtone.sc.ugen-collide//`
