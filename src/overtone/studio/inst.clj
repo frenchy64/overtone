@@ -172,26 +172,25 @@
          volume#    (atom DEFAULT-VOLUME)
          pan#       (atom DEFAULT-PAN)
          init# (fn []
-                 (locking container-group#
-                   (when-not @container-group#
-                     (reset! container-group# (with-server-sync
-                                                #(group (str "Inst " sname# " Container")
-                                                        :tail (:instrument-group @studio*))
-                                                "whilst creating an inst container group")))
-                   (when-not @instance-group#
-                     (reset! instance-group# (with-server-sync
-                                               #(group (str "Inst " sname#)
-                                                       :head @container-group#)
-                                               "whilst creating an inst instance group")))
-                   (when-not @fx-group#
-                     (reset! fx-group# (with-server-sync
-                                         #(group (str "Inst " sname# " FX")
-                                                 :tail @container-group#)
-                                         "whilst creating an inst fx group")))
-                   (when-not @imixer#
-                     (reset! imixer# (inst-mixer n-chans#
-                                                 [:tail @container-group#]
-                                                 :in-bus inst-bus#)))))
+                 (swap! container-group# (fn [g#]
+                                           (or g# (with-server-sync
+                                                    #(group (str "Inst " sname# " Container")
+                                                            :tail (:instrument-group @studio*))
+                                                    "whilst creating an inst container group"))))
+                 (swap! instance-group# (fn [g#]
+                                          (or g# (with-server-sync
+                                                   #(group (str "Inst " sname#)
+                                                           :head @container-group#)
+                                                   "whilst creating an inst instance group"))))
+                 (swap! fx-group# (fn [g#]
+                                    (or g# (with-server-sync
+                                             #(group (str "Inst " sname# " FX")
+                                                     :tail @container-group#)
+                                             "whilst creating an inst fx group"))))
+                 (swap! imixer# (fn [g#]
+                                  (or g# (inst-mixer n-chans#
+                                                     [:tail @container-group#]
+                                                     :in-bus inst-bus#)))))
          sdef# (assoc sdef# :init init#)
          inst#      (with-meta
                       (->Inst sname# full-name# params-with-vals# arg-names# sdef#
@@ -204,6 +203,11 @@
      (add-instrument inst#)
      (event :new-inst :inst inst#)
      inst#))
+
+(on-sync-event :shutdown
+               (fn [_]
+                 (clear-instruments))
+               ::clear-instruments)
 
 (defmacro definst
   "Define an instrument and return a player function. The instrument
@@ -298,12 +302,6 @@
 (defmethod print-method ::instrument [ins ^java.io.Writer w]
   (let [info (meta ins)]
     (.write w (format "#<instrument: %s>" (:name info)))))
-
-(defn load-instruments []
-  (doseq [synth (filter #(synthdef? %1)
-                        (map #(var-get %1)
-                             (vals (ns-publics 'overtone.instrument))))]
-    (load-synthdef synth)))
 
 (defn- inst-block-until-ready*
   [inst]
