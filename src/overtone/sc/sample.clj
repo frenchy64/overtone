@@ -221,7 +221,7 @@
 
 (defn load-samples
   "Takes one or more directory and/or file paths,
-   supports glob or glob paths (see #'overtone.helpers.file/glob)
+   suppoerts glob or glob paths (see #'overtone.helpers.file/glob)
    and loads up all matching samples and returns a seq of maps
    representing information for each loaded sample (see
    load-sample). Samples should be in .aiff or .wav format."
@@ -233,7 +233,7 @@
                                 (mapv #(.getAbsolutePath ^java.io.File %)
                                       (sort files)))))
                       [] glob-paths)]
-    (mapv load-sample paths)))
+    (doall (mapv (fn [path] (load-sample path)) paths))))
 
 (defn load-samples-async
   "Takes one or more directory and/or file paths,
@@ -309,10 +309,9 @@
     (reset! cached-samples* {})
     (reset! loaded-samples* {})
     (doseq [smpl previously-loaded-samples]
-      (load-sample* (:path smpl) (:args smpl)))
-    (satisfy-deps :samples-loaded)))
+      (apply load-sample* (:path smpl) (:args smpl)))))
 
-(on-deps :server-connected ::load-all-samples reload-all-samples)
+(on-deps :server-ready ::load-all-samples reload-all-samples)
 
 (defn- free-loaded-sample
   [smpl]
