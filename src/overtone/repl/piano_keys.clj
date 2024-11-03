@@ -146,6 +146,7 @@
   (print-piano-keys [60 64 67])
   (print-piano-keys [:C4 :E4 :G4 :C5])
   (print-piano-keys [:E4 :G4 :C5])
+  (print-piano-keys [:E4]) ;;FIXME
   (print-piano-keys [:C4 :G4 :C5 :E5 :G5 :C6])
   (print-piano-keys (p/rand-chord :c4 :diminished 3 12))
 (print-piano-keys (p/rand-chord :c-1 :9sus4 12 80))
