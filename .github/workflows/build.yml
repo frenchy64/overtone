@@ -43,19 +43,25 @@ jobs:
         with:
           cli: latest
 
+      #- name: Windows dependencies
+      #  uses: actions/checkout@v4
+      #  with:
+      #    path: sonic-pi
+      #    repository: 'sonic-pi-net/sonic-pi'
+      #    sparse-checkout: |
+      #      prebuilt/windows/${{matrix.arch}}
+      #  if: matrix.os == 'windows-latest'
       - name: Windows dependencies
-        uses: actions/checkout@v4
-        with:
-          path: sonic-pi
-          repository: 'sonic-pi-net/sonic-pi'
-          sparse-checkout: |
-            prebuilt/windows/${{matrix.arch}}
+        shell: bash
+        run: |
+          curl -o SuperCollider-3.13.0-win64.zip 'https://github.com/supercollider/supercollider/releases/download/Version-3.13.0/SuperCollider-3.13.0-win64.zip'
+          unzip SuperCollider-3.13.0-win64.zip -d sc-install
         if: matrix.os == 'windows-latest'
 
       - name: Add scsynth.exe to PATH on Windows
         shell: powershell
         run: |
-          Add-Content $env:GITHUB_PATH "${{github.workspace}}\sonic-pi\prebuilt\windows\${{matrix.arch}}"
+          Add-Content $env:GITHUB_PATH "${{github.workspace}}\sc-install"
         if: matrix.os == 'windows-latest'
 
       - name: Mac dependencies
