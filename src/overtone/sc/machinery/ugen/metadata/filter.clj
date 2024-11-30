@@ -140,7 +140,13 @@
 
            {:name "decay-time"
             :default 1.0
-            :doc "60 dB decay time in seconds"}]
+            :doc "60 dB decay time in seconds"}
+           {:name    "mul"
+            :default 1.0
+            :doc     "Output will be multiplied by this value."}
+           {:name    "add"
+            :default 0.0
+            :doc     "This value will be added to the output."}]
 
     :check (nth-input-stream? 0)
     :doc "This is essentially the same as integrator except that

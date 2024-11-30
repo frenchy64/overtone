@@ -1,7 +1,7 @@
 (ns overtone.synth.monitor
   "Useful monitoring synths"
   {:author "Sam Aaron"}
-  (:use [overtone.core]))
+  (:use [overtone.core :exclude [mono-audio-bus-level]]))
 
 (defsynth mono-audio-bus-level [in-a-bus 0 out-c-bus 0]
   (let [sig   (in:ar in-a-bus 1)

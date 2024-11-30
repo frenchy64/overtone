@@ -22,7 +22,7 @@
         mod1 (lin-lin:kr (sin-osc:kr 6) -1 1 (* freq 0.99) (* freq 1.01))
         mod2 (lin-lin:kr (lf-noise2:kr 1) -1 1 0.2 1)
         mod3 (lin-lin:kr (sin-osc:kr (ranged-rand 4 6)) -1 1 0.5 1)
-        sig (distort (* env (sin-osc [freq mod1])))
+        sig (distort (sin-osc [freq mod1] :mul env))
         sig (* amp sig mod2 mod3)]
     sig))
 
@@ -321,10 +321,9 @@
                    i 0]
               (if (= partials i)
                 z
-                (let [f (clip:kr (mul-add
-                                  (lf-noise1:kr [(+ 6 (rand 4))
-                                                 (+ 6 (rand 4))])
-                                  0.2 offset))
+                (let [f (clip:kr (lf-noise1:kr [(+ 6 (rand 4))
+                                                (+ 6 (rand 4))]
+                                               0.2 offset))
                       src  (f-sin-osc (* freq (inc i)))
                       newz (mul-add src f z)]
                   (recur newz (inc i)))))]
@@ -332,19 +331,20 @@
 
 (definst whoahaha
   [freq 440 dur 5 osc 100 mul 1000]
-  (let [freqs [freq (* freq 1.0068) (* freq 1.0159)]
-        sound (resonz (saw (map #(+ % (* (sin-osc osc) mul)) freqs))
-                      (x-line 10000 10 25)
-                      (line 1 0.05 25))
+  (let [sound (-> osc 
+                  (sin-osc :mul mul :add [freq (* freq 1.0068) (* freq 1.0159)])
+                  saw
+                  (resonz (x-line 10000 10 25)
+                          (line 1 0.05 25)))
         sound (apply + sound)]
   (* (lf-saw:kr (line:kr 13 17 3)) (line:kr 1 0 dur FREE) sound)))
 
 (definst bubbles
   [bass-freq 80]
-  (let [bub (+ bass-freq (* 3 (lf-saw:kr [8 7.23])))
-        glis (+ bub (* 24 (lf-saw:kr 0.4 0)))
+  (let [bub (lf-saw:kr [8 7.23] 3 bass-freq)
+        glis (lf-saw:kr 0.4 0 24 bub)
         freq (midicps glis)
-        src (* 0.04 (sin-osc freq))
+        src (sin-osc freq :mul 0.04)
         zout (comb-n src :decay-time 4)]
     zout))
 

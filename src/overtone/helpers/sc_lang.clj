@@ -2,7 +2,7 @@
   "Convert a subset of sclang to Overtone
 
   Convert strings of SuperCollider's built-in language to Overtone forms. Fairly
-  minimal, does not support assignements, code blocks, etc. But can handle basic
+  minimal, does not support assignments, code blocks, etc. But can handle basic
   combinations of UGens. Useful when porting synths, could even be used to embed
   snippet of sc-lang directly inside Overtone synth definitions.
 

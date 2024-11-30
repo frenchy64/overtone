@@ -68,7 +68,16 @@
 
            {:name    "phase"
             :default 0.0
-            :doc     "Phase offset or modulator in radians"}]
+            :doc     "Phase offset or modulator in radians"}
+
+           {:name    "mul"
+            :default 1.0
+            :doc     "Output will be multiplied by this value."}
+
+           {:name    "add"
+            :default 0.0
+            :doc     "This value will be added to the output."}
+           ]
 
     :summary "Sine table lookup oscillator"
     :doc     "Outputs a sine wave with values oscillating between -1 and
@@ -219,7 +228,13 @@
            {:name    "iphase"
             :default 0.0
             :doc     "Initial phase offset. For efficiency reasons this
-                     is a value ranging from 0 to 2."}]
+                     is a value ranging from 0 to 2."}
+           {:name    "mul"
+            :default 1.0
+            :doc     "Output will be multiplied by this value."}
+           {:name    "add"
+            :default 0.0
+            :doc     "This value will be added to the output."}]
 
     :doc "low freq (i.e. not band limited) sawtooth oscillator"}
 

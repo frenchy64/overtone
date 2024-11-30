@@ -42,11 +42,11 @@
    "sinh" 34       ; hyperbolic sine
    "cosh" 35       ; hyperbolic cosine
    "tanh" 36       ; hyperbolic tangent
-   ;;"rand" 37     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"rand2" 38    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"linrand" 39  ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"bilinrand" 40; Defined in UnaryOpUGens.cpp enum but not implemented on the server
-   ;;"sum3rand" 41 ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "rand" 37     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "rand2" 38    ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "linrand" 39  ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "bilinrand" 40; Defined in UnaryOpUGens.cpp enum but not implemented on the server
+   "sum3rand" 41 ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
    "distort" 42    ; distortion
    "softclip" 43   ; distortion
    ;;"coin" 44     ; Defined in UnaryOpUGens.cpp enum but not implemented on the server
@@ -90,10 +90,10 @@
    "atan2" 22        ; arctangent of a/b
    "hypot" 23        ; length of hypotenuse via Pythag
    "hypot-aprox" 24  ; approximation of length of hypotenuse
-   "pow" 25          ; exponentiation
-   ;;"leftShift" 26  ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   ;;"rightShift" 27 ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
-   ;;"un-r-shift" 28 ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
+   "pow" 25          ; ** exponentiation
+   "bit-shift-left" 26    ; <<, leftShift
+   "bit-shift-right" 27   ; >>, rightShift
+   "unsigned-bit-shift-right" 28 ; +>>, unsignedRightShift
    ;;"fill" 29       ; Defined in BinaryOpUGens.cpp enum but not implemented on the server
    "ring1" 30        ; a * (b + 1) == a * b + a
    "ring2" 31        ; a * b + a + b
@@ -121,7 +121,7 @@
 
 ;;the following are Clojure fns that can only take numerical args
 (def NUMERICAL-CLOJURE-FNS
-  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "mod" "abs" "bit-and" "bit-or" "bit-xor"})
+  #{"+" "*" "-" "/" "<" ">" "<=" ">=" "min" "max" "mod" "abs" "bit-and" "bit-or" "bit-xor" "rand"})
 
 (def REVERSE-BINARY-OPS (zipmap (vals BINARY-OPS) (keys BINARY-OPS)))
 

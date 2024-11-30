@@ -285,6 +285,11 @@
        (throw (TimeoutException. (str "deref! timeout error. Dereference took longer than " timeout " ms" (when-not (empty? msg) (str " whilst " msg)))))
        res))))
 
+(defn force! [ref]
+  (if (instance? clojure.lang.IDeref ref)
+    (deref! ref)
+    ref))
+
 (defn stringify-map-vals
   "converts a map by running all its vals through str
   (or name if val is a keyword"
