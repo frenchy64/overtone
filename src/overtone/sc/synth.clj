@@ -340,7 +340,7 @@
   "Returns a list of param name symbols and control proxies"
   [params]
   (mapcat (fn [param] [(symbol (:name param))
-                      `(control-proxy ~(:name param) ~(:default param) ~(:rate param))])
+                       `(control-proxy ~(:name param) ~(:default param) ~(:rate param))])
           params))
 
 (defn- gen-synth-name
@@ -426,6 +426,7 @@
    reuse of connection buffers, which means that a depth first
    topological sort of the graph is preferable to breadth first.'"
   [ugens]
+  (prn "ugens" ugens)
   (let [visit (fn visit [[ret visited path :as acc] ug]
                 (cond
                  (visited ug) acc
@@ -452,30 +453,35 @@
         ids        (set (map :id local-bufs))]
     (count ids)))
 
+(defn -pre-synth [->ugen sname params]
+  (binding [*ugens* []
+            *constants* #{}]
+    (let [[ugens consts]  (gather-ugens-and-constants (->ugen))
+          ugens           (topological-sort-ugens ugens)
+          main-tree       (set ugens)
+          side-tree       (remove main-tree *ugens*)
+          ugens           (concat ugens side-tree)
+          n-local-bufs    (count-ugens ugens "LocalBuf")
+          ugens           (if (> n-local-bufs 0)
+                            (cons (max-local-bufs n-local-bufs) ugens)
+                            ugens)
+          consts          (if (> n-local-bufs 0)
+                            (cons n-local-bufs consts)
+                            consts)
+          consts          (into [] (distinct) (concat consts *constants*))]
+      [sname params ugens consts])))
+
 (defmacro pre-synth
   "Resolve a synth def to a list of its name, params, ugens (nested if necessary)
   and constants. Sets the lexical bindings of the param names to control proxies
   within the synth definition"
   [& args]
   (let [[sname params param-proxies ugen-form] (normalize-synth-args args)]
-    `(let [~@param-proxies]
-          (binding [*ugens* []
-                    *constants* #{}]
-            (let [[ugens# consts#] (gather-ugens-and-constants
-                                    (with-overloaded-ugens ~@ugen-form))
-                  ugens#           (topological-sort-ugens ugens#)
-                  main-tree#       (set ugens#)
-                  side-tree#       (filter #(not (main-tree# %)) *ugens*)
-                  ugens#           (concat ugens# side-tree#)
-                  n-local-bufs#    (count-ugens ugens# "LocalBuf")
-                  ugens#           (if (> n-local-bufs# 0)
-                                     (cons (max-local-bufs n-local-bufs#) ugens#)
-                                     ugens#)
-                  consts#          (if (> n-local-bufs# 0)
-                                     (cons n-local-bufs# consts#)
-                                     consts#)
-                  consts#       (into [] (set (concat consts# *constants*)))]
-              [~sname ~params ugens# consts#])))))
+    `(-pre-synth
+       (let [~@param-proxies]
+         #(with-overloaded-ugens ~@ugen-form))
+       ~sname
+       ~params)))
 
 (defn synth-player
   "Returns a player function for a named synth.  Used by (synth ...)
@@ -559,29 +565,32 @@
       (reset! ref (:default param)))
     ref))
 
+(defn -synth [full-name pre-synth-result]
+  (let [[sname params ugens constants] pre-synth-result
+        sdef             (synthdef sname params ugens constants)
+        arg-names        (map :name params)
+        params-with-vals (map (fn [param] (assoc param :value (control-proxy-value-atom full-name param))) params)
+        instance-fn      (apply comp (map :instance-fn (filter :instance-fn (map meta ugens))))
+        smap (with-meta
+               (map->Synth
+                 {:name sname
+                  :sdef sdef
+                  :args arg-names
+                  :params params-with-vals
+                  :instance-fn instance-fn})
+               {:overtone.helpers.lib/to-string (fn [this] (str (name (:type this)) ":" (:name this)))})]
+    (load-synthdef sdef)
+    (event :new-synth :synth smap)
+    smap))
+
 (defmacro synth
   "Define a SuperCollider synthesizer using the library of ugen
   functions provided by overtone.sc.ugen. This will return callable
   record which can be used to trigger the synthesizer.
   "
   [sname & args]
-  `(let [full-name# '~(symbol (str *ns*) (str sname))
-         [sname# params# ugens# constants#] (pre-synth ~sname ~@args)
-         sdef#             (synthdef sname# params# ugens# constants#)
-         arg-names#        (map :name params#)
-         params-with-vals# (map #(assoc % :value (control-proxy-value-atom full-name# %)) params#)
-         instance-fn#      (apply comp (map :instance-fn (filter :instance-fn (map meta ugens#))))
-         smap# (with-meta
-                 (map->Synth
-                  {:name sname#
-                   :sdef sdef#
-                   :args arg-names#
-                   :params params-with-vals#
-                   :instance-fn instance-fn#})
-                 {:overtone.helpers.lib/to-string #(str (name (:type %)) ":" (:name %))})]
-     (load-synthdef sdef#)
-     (event :new-synth :synth smap#)
-     smap#))
+  `(-synth '~(symbol (str *ns*) (str sname))
+           (pre-synth ~sname ~@args)))
 
 (defn synth-form
   "Internal function used to prepare synth meta-data."
