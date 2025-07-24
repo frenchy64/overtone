@@ -1,12 +1,13 @@
-(ns overtone.music.drums)
+(ns overtone.music.drums
+  (:require [overtone.music.time :refer [periodic]]))
 
 ;; * Pattern based rhythms
 ;; - define piano rolls of triggers and assign instruments to each channel
 
 ;; Using 1/4 notes
-;; (def house-beat {:kick  [O _ _ _ O _ _ _ O _ _ _ O _ _ _]
-;;                  :o-hat [_ _ O _ _ _ O _ _ _ O _ _ _ O _]
-;;                  :clap  [_ _ _ _ O _ _ _ _ _ _ _ O _ _ _]})
+(def house-beat '{:kick  [O _ _ _ O _ _ _ O _ _ _ O _ _ _]
+                  :o-hat [_ _ O _ _ _ O _ _ _ O _ _ _ O _]
+                  :clap  [_ _ _ _ O _ _ _ _ _ _ _ O _ _ _]})
 
 ;; (make-beat house-beat {:base "kick.wav"
 ;;                        :o-hat "hat.wav"
@@ -33,7 +34,7 @@
               (fn []
                 (let [num (rand)
                       i   @*drum-count]
-                  (doseq [[voice pattern] @*drums]
-                    (if (< num (nth pattern i))
-                      (hit voice :pitch 50 :dur 200)))
+                  (doseq [[voice pattern] @*drums
+                          :when (< num (nth pattern i))]
+                    (hit voice :pitch 50 :dur 200))
                   (dosync (ref-set *drum-count (mod (inc @*drum-count) beat-count)))))))
