@@ -46,28 +46,51 @@
      (saw freq)))
 
 (sawzall)
+(run! #(sawzall (* 440 %)) [1 1.2 1.5 2])
 
 ; Triangle wave
 (definst triangular [freq 120]
    (* (env-gen (perc 0.1 4.8) :action FREE)
-     (lf-tri freq)))
+      (lf-tri freq)))
+
+(triangular 400)
 (triangular 320)
 
 ; Square wave
 (definst sq [freq 120]
    (* (env-gen (perc 0.1 4.8) :action FREE)
-     (square freq)))
+      (square freq)))
+
+(sq 400)
 (sq 320)
+
+;; Synths are regular functions which make it easy to create powerful abstractions.
+
+(defn door-bell
+  "'Ding dong!' goes your synth."
+  ([] (door-bell triangular))
+  ([synth]
+   (synth 400)
+   ;; Simple, but we'll find better ways to coordinate sounds with at-at.
+   (Thread/sleep 500)
+   (synth 320)))
+
+(door-bell)
+(door-bell sq)
+(door-bell sawzall)
+(door-bell my-sin)
+
+(stop)
 
 ; White noise
 (definst noisey []
-     (* (env-gen (perc 0.1 1.8) :action FREE)
+  (* (env-gen (perc 0.1 1.8) :action FREE)
      (white-noise)))
 (noisey)
 
 ; Pink noise
 (definst pink-noisey []
-     (* (env-gen (perc 0.1 1.8) :action FREE)
+  (* (env-gen (perc 0.1 1.8) :action FREE)
      (pink-noise)))
 (pink-noisey)
 
@@ -79,11 +102,8 @@
 ; going to make some noise.
 (def id (foo))
 
-;; Now you can kill this instance like so
+;; Now you can kill this specific instance like so:
 (kill id)
-
-; For future reference, if you want to stop all sound immediately you can
-; call (reset).
 
 ; Often times in audio synthesis you want to generate multiple channels
 ; of audio, whether it be for stereo, or for creating multiple signals that will
